@@ -1,0 +1,241 @@
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  Dimensions,
+} from "react-native";
+import { Colors, Sizes, Fonts } from "../../../constant/styles";
+import { MaterialIcons } from "@expo/vector-icons";
+import Dialog from "react-native-dialog";
+import { useTaskSliceSelector } from "../../../redux/slices/taskSlice";
+import { RenderTaskItem } from "./common";
+
+const { width, height } = Dimensions.get("screen");
+
+const MyTasks = ({ navigation }) => {
+  const { myTasks } = useTaskSliceSelector();
+  const [showActiveDialog, setShowActiveDialog] = useState(false);
+
+  return (
+    <View style={{ flex: 1, backgroundColor: "#F4F4F4" }}>
+      <FlatList
+        data={myTasks}
+        keyExtractor={(item) => `${item?.id || item?.job_id}`}
+        renderItem={RenderTaskItem}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingTop: Sizes.fixPadding,
+          paddingBottom: Sizes.fixPadding * 6.0,
+        }}
+      />
+      {activeDialog()}
+    </View>
+  );
+
+  function activeDialog() {
+    return (
+      <Dialog.Container
+        visible={showActiveDialog}
+        contentStyle={styles.dialogContainerStyle}
+        headerStyle={{ margin: 0.0, padding: 0.0 }}
+      >
+        <View
+          style={{
+            backgroundColor: "white",
+            height: height - 150,
+            borderRadius: Sizes.fixPadding,
+          }}
+        >
+          {orderId()}
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {locationDetail()}
+            {customerDetail()}
+            {paymentDetail()}
+            {startButton()}
+          </ScrollView>
+        </View>
+      </Dialog.Container>
+    );
+  }
+
+  function startButton() {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={() => {
+          //   setShowActiveDialog(false);
+          //   navigation.navigate("ShowMap");
+        }}
+        style={styles.startButtonStyle}
+      >
+        <Text style={{ ...Fonts.whiteColor18Medium }}>Start</Text>
+      </TouchableOpacity>
+    );
+  }
+
+  function paymentDetail() {
+    return (
+      <View style={styles.detailWrapStyle}>
+        <View style={styles.detailHeaderWrapStyle}>
+          <Text style={{ ...Fonts.blackColor17Medium }}>Payment</Text>
+        </View>
+        <View style={styles.detailDescriptionWrapStyle}>
+          <View style={{ ...styles.detailSpecificWrapStyle }}>
+            <Text style={{ ...Fonts.blackColor15Medium }}>Payment</Text>
+            <Text style={{ ...Fonts.blackColor15Medium }}>Pay on Delivery</Text>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  function customerDetail() {
+    return (
+      <View style={styles.detailWrapStyle}>
+        <View style={styles.detailHeaderWrapStyle}>
+          <Text style={{ ...Fonts.blackColor17Medium }}>Customer</Text>
+        </View>
+        <View style={styles.detailDescriptionWrapStyle}>
+          <View style={{ ...styles.detailSpecificWrapStyle }}>
+            <Text style={{ ...Fonts.blackColor15Medium }}>Name</Text>
+            <Text style={{ ...Fonts.blackColor15Medium }}>Allison Perry</Text>
+          </View>
+          <View style={{ ...styles.detailSpecificWrapStyle }}>
+            <Text style={{ ...Fonts.blackColor15Medium }}>Phone</Text>
+            <Text style={{ ...Fonts.blackColor15Medium }}>123456789</Text>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  function locationDetail() {
+    return (
+      <View style={styles.detailWrapStyle}>
+        <View style={styles.detailHeaderWrapStyle}>
+          <Text style={{ ...Fonts.blackColor17Medium }}>Location</Text>
+        </View>
+        <View style={styles.detailDescriptionWrapStyle}>
+          <View
+            style={{
+              ...styles.detailSpecificWrapStyle,
+              justifyContent: "flex-start",
+            }}
+          >
+            <Text style={{ ...Fonts.blackColor15Medium, width: width / 2.6 }}>
+              Pickup Location
+            </Text>
+            <Text style={{ ...Fonts.blackColor15Medium }}>28 Mott Stret</Text>
+          </View>
+          <View
+            style={{
+              ...styles.detailSpecificWrapStyle,
+              justifyContent: "flex-start",
+            }}
+          >
+            <Text style={{ ...Fonts.blackColor15Medium, width: width / 2.6 }}>
+              Delivery Location
+            </Text>
+            <Text style={{ ...Fonts.blackColor15Medium }}>56 Andheri East</Text>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  function orderId() {
+    return (
+      <View style={styles.detailTitleWrapStyle}>
+        <Text style={{ ...Fonts.whiteColor17Regular }}>OID123456789</Text>
+      </View>
+    );
+  }
+};
+
+const styles = StyleSheet.create({
+  dotStyle: {
+    height: 5.0,
+    width: 5.0,
+    borderRadius: 2.5,
+    backgroundColor: Colors.primaryColor,
+    marginHorizontal: Sizes.fixPadding - 7.0,
+  },
+  deliveryAndPickupAddressWrapStyle: {
+    backgroundColor: Colors.lightGrayColor,
+    flexDirection: "row",
+    borderBottomLeftRadius: Sizes.fixPadding - 5.0,
+    borderBottomRightRadius: Sizes.fixPadding - 5.0,
+    justifyContent: "space-between",
+    paddingHorizontal: Sizes.fixPadding + 3.0,
+    paddingVertical: Sizes.fixPadding,
+  },
+  orderAndPaymentDetailWrapStyle: {
+    flexDirection: "row",
+    paddingHorizontal: Sizes.fixPadding + 3.0,
+    paddingVertical: Sizes.fixPadding,
+    justifyContent: "space-between",
+  },
+  orderDetailWrapStyle: {
+    backgroundColor: Colors.whiteColor,
+    borderRadius: Sizes.fixPadding - 5.0,
+    marginHorizontal: Sizes.fixPadding,
+    marginBottom: Sizes.fixPadding * 2.0,
+  },
+  dialogContainerStyle: {
+    borderRadius: Sizes.fixPadding,
+    width: width - 70,
+    alignSelf: "center",
+    margin: 0,
+    padding: 0,
+  },
+  detailWrapStyle: {
+    marginHorizontal: Sizes.fixPadding,
+    borderRadius: Sizes.fixPadding,
+    backgroundColor: Colors.whiteColor,
+    marginVertical: Sizes.fixPadding,
+  },
+  detailHeaderWrapStyle: {
+    backgroundColor: Colors.lightGrayColor,
+    paddingVertical: Sizes.fixPadding - 2.0,
+    alignItems: "center",
+    borderTopLeftRadius: Sizes.fixPadding - 5.0,
+    borderTopRightRadius: Sizes.fixPadding - 5.0,
+  },
+  detailDescriptionWrapStyle: {
+    backgroundColor: Colors.whiteColor,
+    borderColor: "#F6F6F6",
+    borderWidth: 1.0,
+    elevation: 0.7,
+    padding: Sizes.fixPadding,
+    borderBottomLeftRadius: Sizes.fixPadding - 5.0,
+    borderBottomRightRadius: Sizes.fixPadding - 5.0,
+  },
+  detailSpecificWrapStyle: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: Sizes.fixPadding - 5.0,
+  },
+  detailTitleWrapStyle: {
+    backgroundColor: Colors.primaryColor,
+    paddingVertical: Sizes.fixPadding,
+    alignItems: "center",
+    borderTopLeftRadius: Sizes.fixPadding,
+    borderTopRightRadius: Sizes.fixPadding,
+  },
+  startButtonStyle: {
+    backgroundColor: Colors.primaryColor,
+    paddingVertical: Sizes.fixPadding - 2.0,
+    alignItems: "center",
+    marginHorizontal: Sizes.fixPadding,
+    borderRadius: Sizes.fixPadding - 5.0,
+    marginVertical: Sizes.fixPadding,
+  },
+});
+
+export default MyTasks;

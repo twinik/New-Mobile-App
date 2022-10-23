@@ -1,0 +1,17 @@
+[    
+{
+        "id": "100",
+        "status": "Free"
+
+    },
+    {
+        "id": "200",
+        "status": "Bussy"
+       
+    },
+    {
+        "id": "300",
+        "status": "Offline"
+
+    }
+]

@@ -1,0 +1,38 @@
+[    
+{
+        "id": "1",
+        "name": "COCA COLA PUERTO RICO",
+        "image": "../assets/images/patient.png"
+    },
+    {
+        "id": "2",
+        "name": "PEPSICO FRITOLAY",
+        "image": "../assets/images/stethoscope.png"
+    },
+    {
+        "id": "3",
+        "name": "KELLOGGS",
+        "image": "../assets/images/woman.png"
+    },
+    {
+        "id": "4",
+        "name": "HEINEKEN",
+        "image": "../assets/images/pediatrician.png"
+    },
+    {
+        "id": "5",
+        "name": "CERVEZA",
+        "image": "../assets/images/physiotherapist.png"
+    },
+    {
+        "id": "6",
+        "name": "RETAIL GROUP",
+        "image": "../assets/images/nutritionist.png"
+    },
+    {
+        "id": "7",
+        "name": "OTRO",
+        "image": "../assets/images/pain.png"
+    }
+]
+
