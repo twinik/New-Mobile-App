@@ -29,7 +29,7 @@ const Headerx = ({ navigation }) => {
   return (
     <View style={styles.headerWrapStyle}>
       <Text style={{ ...Fonts.blackColor18Medium }}>
-        Hello {user?.username}!
+        Hello, {user?.username}!
       </Text>
       <View
         style={{

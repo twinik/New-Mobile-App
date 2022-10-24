@@ -4,8 +4,13 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  ScrollView,
   Dimensions,
+  TextInput,
 } from "react-native";
+import Dialog from "react-native-dialog";
+import MapView from "react-native-maps";
+import { Marker } from "react-native-maps";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Colors, Sizes, Fonts } from "../../../constant/styles";
 import { truncateText } from "../../../helpers/utils";
@@ -15,7 +20,7 @@ import StatusButton from "../../../components/StatusButton";
 
 const { width, height } = Dimensions.get("screen");
 
-export const RenderTaskItem = ({ item }) => {
+export const RenderTaskItem = ({ item, toggleDialog }) => {
   const CTA_TEXTS = {
     created: "Accept",
     assigned: "Start",
@@ -28,19 +33,14 @@ export const RenderTaskItem = ({ item }) => {
     <View style={styles.orderDetailWrapStyle}>
       <View style={styles.orderAndPaymentDetailWrapStyle}>
         <View style={{ flexDirection: "row" }}>
-          <View>
+          <View style={{ alignItems: "center", width: 40 }}>
             <MaterialIcons
               name="add-task"
               size={24}
               color={Colors.primaryColor}
             />
-            <View
-              style={{
-                flex: 1,
-                transform: [{ rotate: "-90deg" }],
-              }}
-            >
-              <StatusButton status={item?.job_status_} varient="vertical" />
+            <View style={styles.statusButtonRotated}>
+              <StatusButton status={item?.job_status_} />
             </View>
           </View>
           <View style={{ marginLeft: Sizes.fixPadding }}>
@@ -75,10 +75,7 @@ export const RenderTaskItem = ({ item }) => {
         <View>
           <TouchableOpacity
             activeOpacity={0.9}
-            onPress={() => {
-              // setShowAcceptDialog(true);
-              // setCurrentOrderId(item.id);
-            }}
+            onPress={toggleDialog}
             style={styles.acceptButtonStyle}
           >
             <Text
@@ -121,7 +118,7 @@ export const RenderTaskItem = ({ item }) => {
       <View style={styles.deliveryAndPickupAddressWrapStyle}>
         <MaterialIcons
           name="location-on"
-          size={20}
+          size={22}
           color={Colors.primaryColor}
         />
         <Text
@@ -161,6 +158,13 @@ export const EmptySkeleton = ({ message }) => {
 };
 
 const styles = StyleSheet.create({
+  statusButtonRotated: {
+    transform: [{ rotate: "-90deg" }],
+    width: 110,
+    maxWidth: 120,
+    marginTop: 25,
+    marginLeft: -38,
+  },
   dotStyle: {
     height: 5.0,
     width: 5.0,

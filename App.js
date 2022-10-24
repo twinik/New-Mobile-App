@@ -19,13 +19,11 @@ import MapView from "./screens/order/MapView";
 import { LogBox } from "react-native";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "./config/firebase";
 
-LogBox.ignoreLogs([
+/* LogBox.ignoreLogs([
   "ViewPropTypes will be removed",
   "ColorPropType will be removed",
-]);
+]); */
 
 const switchNavigator = createSwitchNavigator(
   {
@@ -59,7 +57,6 @@ const App = createAppContainer(switchNavigator);
 const AppEnhancer = () => {
   // useEffect(() => {
   //   onAuthStateChanged(auth, () => {
-
   //   });
   // }, []);
   return <App />;

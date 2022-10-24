@@ -77,8 +77,8 @@ const Orders = ({ navigation }) => {
   const dispatch = useDispatch();
   const [index, setIndex] = useState(0);
   const [routes] = useState([
-    { key: "first", title: "Open" },
-    { key: "second", title: "My Tasks" },
+    { key: "first", title: "Open " },
+    { key: "second", title: "My Tasks " },
     { key: "third", title: "History" },
   ]);
 
@@ -95,9 +95,6 @@ const Orders = ({ navigation }) => {
 
   return (
     <View style={{ flex: 1 }}>
-      <TouchableOpacity onPress={() => dispatch(logoutAction())}>
-        <Text>logout</Text>
-      </TouchableOpacity>
       <TabView
         navigationState={{ index, routes }}
         renderScene={renderScene}

@@ -5,14 +5,14 @@ import {
   StyleSheet,
   FlatList,
   ScrollView,
-  Image,
   TouchableOpacity,
   Dimensions,
   TextInput,
 } from "react-native";
 import Dialog from "react-native-dialog";
 import { MaterialIcons } from "@expo/vector-icons";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import MapView from "react-native-maps";
+import { Marker } from "react-native-maps";
 import { Colors, Sizes, Fonts } from "../../../constant/styles";
 import { useTaskSliceSelector } from "../../../redux/slices/taskSlice";
 import { truncateText } from "../../../helpers/utils";
@@ -68,12 +68,23 @@ const newOrders = [
   },
 ];
 
-function TaskList({ list }) {
+function TaskList({ list, setShowAcceptDialog }) {
+  function RenderItem({ item }) {
+    return (
+      <RenderTaskItem
+        item={item}
+        toggleDialog={() => {
+          setShowAcceptDialog(true);
+        }}
+      />
+    );
+  }
+
   return (
     <FlatList
       data={list}
       keyExtractor={(item) => `${item?.id || item?.job_id}`}
-      renderItem={RenderTaskItem}
+      renderItem={RenderItem}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
         paddingTop: Sizes.fixPadding,
@@ -83,23 +94,19 @@ function TaskList({ list }) {
   );
 }
 
-const OpenTasks = () => {
+const OpenTasks = ({ item }) => {
   const { newTasks } = useTaskSliceSelector();
   const [newOrdersList, setNewOrderList] = React.useState(newOrders);
-
   const [showAcceptDialog, setShowAcceptDialog] = useState(false);
-
   const [currentOrderId, setCurrentOrderId] = useState(null);
-
   const [showRejectDialog, setShowRejectDialog] = useState(false);
-
   const [resonField, setResonField] = useState(false);
   console.log("[newTasks]: ", newTasks?.length);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#F4F4F4" }}>
       {(!newTasks || newTasks?.length === 0) && <EmptySkeleton />}
-      <TaskList list={newTasks} />
+      <TaskList list={newTasks} setShowAcceptDialog={setShowAcceptDialog} />
       {acceptDialog()}
       {rejectDialog()}
     </View>
@@ -200,8 +207,7 @@ const OpenTasks = () => {
           <ScrollView showsVerticalScrollIndicator={false}>
             {orderDetail()}
             {locationDetail()}
-            {customerDetail()}
-            {paymentDetail()}
+            {templateDetail()}
             {rejectAndAcceptButton()}
           </ScrollView>
         </View>
@@ -247,27 +253,11 @@ const OpenTasks = () => {
     );
   }
 
-  function paymentDetail() {
+  function templateDetail() {
     return (
       <View style={styles.detailWrapStyle}>
         <View style={styles.detailHeaderWrapStyle}>
-          <Text style={{ ...Fonts.blackColor17Medium }}>Payment</Text>
-        </View>
-        <View style={styles.detailDescriptionWrapStyle}>
-          <View style={{ ...styles.detailSpecificWrapStyle }}>
-            <Text style={{ ...Fonts.blackColor15Medium }}>Payment</Text>
-            <Text style={{ ...Fonts.blackColor15Medium }}>Pay on Delivery</Text>
-          </View>
-        </View>
-      </View>
-    );
-  }
-
-  function customerDetail() {
-    return (
-      <View style={styles.detailWrapStyle}>
-        <View style={styles.detailHeaderWrapStyle}>
-          <Text style={{ ...Fonts.blackColor17Medium }}>Customer</Text>
+          <Text style={{ ...Fonts.blackColor17Medium }}>Template Detail</Text>
         </View>
         <View style={styles.detailDescriptionWrapStyle}>
           <View style={{ ...styles.detailSpecificWrapStyle }}>
@@ -284,33 +274,36 @@ const OpenTasks = () => {
   }
 
   function locationDetail() {
+    var position = {
+      latitude: 37.78825,
+      longitude: -122.4324,
+    };
     return (
       <View style={styles.detailWrapStyle}>
         <View style={styles.detailHeaderWrapStyle}>
           <Text style={{ ...Fonts.blackColor17Medium }}>Location</Text>
         </View>
         <View style={styles.detailDescriptionWrapStyle}>
-          <View
-            style={{
-              ...styles.detailSpecificWrapStyle,
-              justifyContent: "flex-start",
+          <MapView
+            style={{ height: 250 }}
+            initialRegion={{
+              latitude: position.latitude,
+              longitude: position.longitude,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
             }}
           >
-            <Text style={{ ...Fonts.blackColor15Medium, width: width / 2.6 }}>
-              Pickup Location
+            <Marker
+              coordinate={position}
+              title={"Your Location"}
+              description={"Your Location"}
+            />
+          </MapView>
+          <View style={{ flexDirection: "row", marginTop: 10 }}>
+            <MaterialIcons name="place" size={24} color="black" />
+            <Text style={{ ...Fonts.blackColor15Medium }}>
+              28 Mott Street, Bogota, Colombia
             </Text>
-            <Text style={{ ...Fonts.blackColor15Medium }}>28 Mott Stret</Text>
-          </View>
-          <View
-            style={{
-              ...styles.detailSpecificWrapStyle,
-              justifyContent: "flex-start",
-            }}
-          >
-            <Text style={{ ...Fonts.blackColor15Medium, width: width / 2.6 }}>
-              Delivery Location
-            </Text>
-            <Text style={{ ...Fonts.blackColor15Medium }}>56 Andheri East</Text>
           </View>
         </View>
       </View>
@@ -323,39 +316,75 @@ const OpenTasks = () => {
         <View style={styles.detailHeaderWrapStyle}>
           <Text style={{ ...Fonts.blackColor17Medium }}>Order</Text>
         </View>
-        <View style={styles.detailDescriptionWrapStyle}>
-          <View style={styles.detailSpecificWrapStyle}>
-            <Text style={{ ...Fonts.blackColor15Medium }}>Deal 1</Text>
-            <Text style={{ ...Fonts.blackColor15Medium }}>$430</Text>
+
+        <View style={{ flexDirection: "row" }}>
+          <View style={{ marginLeft: Sizes.fixPadding, flex: 1 }}>
+            {/* <Text style={{ ...Fonts.blackColor18Medium }}>
+            {truncateText(item?.id, 10)}
+          </Text> */}
+            <View style={{ marginTop: Sizes.fixPadding - 4 }}>
+              <Text style={{ ...Fonts.grayColor12Medium }}>Team:</Text>
+              <Text style={{ ...Fonts.blackColor14Medium }}>
+                {/* {truncateText(item?.team_name_, 20)} */}
+                TestTeam
+              </Text>
+            </View>
+            <View style={{ marginTop: Sizes.fixPadding - 4 }}>
+              <Text style={{ ...Fonts.grayColor12Medium }}>Customer name:</Text>
+              <Text
+                style={{ ...Fonts.blackColor14Medium, flex: 1 }}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {/* {truncateText(item?.customer_name_, 20)} */}
+                TestName
+              </Text>
+            </View>
+            <View style={{ marginTop: Sizes.fixPadding - 4 }}>
+              <Text style={{ ...Fonts.grayColor12Medium }}>Template:</Text>
+              <Text style={{ ...Fonts.blackColor14Medium }}>
+                {/* {truncateText(item?.template_name_, 20)} */}
+                TestTemplate
+              </Text>
+            </View>
           </View>
-          <View style={styles.detailSpecificWrapStyle}>
-            <Text style={{ ...Fonts.blackColor15Medium }}>
-              7up Regular 250ml
-            </Text>
-            <Text style={{ ...Fonts.blackColor15Medium }}>$80</Text>
-          </View>
-          <View style={styles.detailSpecificWrapStyle}>
-            <Text style={{ ...Fonts.blackColor15Medium }}>
-              Delivery Charges
-            </Text>
-            <Text style={{ ...Fonts.blackColor15Medium }}>$10</Text>
-          </View>
-          <View
-            style={{
-              height: 0.5,
-              backgroundColor: Colors.lightGrayColor,
-              marginBottom: Sizes.fixPadding - 5.0,
-            }}
-          />
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <Text style={{ ...Fonts.blackColor18Medium }}>Total</Text>
-            <Text style={{ ...Fonts.primaryColor18Bold }}>$520</Text>
+
+          <View style={{ flex: 1, marginTop: 15 }}>
+            <View
+              style={{
+                marginTop: Sizes.fixPadding - 4,
+                marginBottom: Sizes.fixPadding - 9.0,
+              }}
+            >
+              <Text style={{ ...Fonts.blackColor14Medium }}>
+                {
+                  /* `@ ${
+              dayjs().isBefore(item?.datetime_start_before_)
+                ? "On Time"
+                : "Delayed"
+            }` */
+                  "@ On Time"
+                }
+              </Text>
+              <View style={{ marginTop: Sizes.fixPadding - 4 }}>
+                <Text style={{ ...Fonts.grayColor12Medium }}>
+                  Start before:
+                </Text>
+                <Text style={{ ...Fonts.blackColor14Medium }}>
+                  {/* {dayjs(item.datetime_start_before_).format(
+                  "DD MMM YYYY hh:mm A"
+                )} */}
+                  12/12/2020 12:00 PM
+                </Text>
+              </View>
+              <View style={{ marginTop: Sizes.fixPadding - 4 }}>
+                <Text style={{ ...Fonts.grayColor12Medium }}>End before:</Text>
+                <Text style={{ ...Fonts.blackColor14Medium }}>
+                  {/* {dayjs(item.datetime_end_before_).format("DD MMM YYYY hh:mm A")} */}
+                  12/12/2020 12:00 PM
+                </Text>
+              </View>
+            </View>
           </View>
         </View>
       </View>
@@ -365,7 +394,9 @@ const OpenTasks = () => {
   function orderId() {
     return (
       <View style={styles.detailTitleWrapStyle}>
-        <Text style={{ ...Fonts.whiteColor17Regular }}>OID123456789</Text>
+        <Text style={{ ...Fonts.whiteColor17Regular }}>
+          {truncateText(item?.id, 10)}
+        </Text>
       </View>
     );
   }
@@ -509,6 +540,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginLeft: Sizes.fixPadding + 5.0,
+  },
+  map: {
+    height: "70%",
+    width: "100%",
   },
 });
 
