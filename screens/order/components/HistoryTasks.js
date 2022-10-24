@@ -69,7 +69,7 @@ const HistoryTaskList = ({ navigation }) => {
         <View
           style={{
             backgroundColor: "white",
-            height: height - 150,
+            height: height - 130,
             borderRadius: Sizes.fixPadding,
           }}
         >
@@ -78,8 +78,9 @@ const HistoryTaskList = ({ navigation }) => {
             {orderDetail()}
             {locationDetail()}
             {templateDetail()}
-            {rejectAndAcceptButton()}
+           
           </ScrollView>
+          {rejectAndAcceptButton()}
         </View>
       </Dialog.Container>
     );
@@ -311,7 +312,7 @@ const styles = StyleSheet.create({
   },
   dialogContainerStyle: {
     borderRadius: Sizes.fixPadding,
-    width: width - 70,
+    width: width - 30,
     alignSelf: "center",
     margin: 0,
     padding: 0,
