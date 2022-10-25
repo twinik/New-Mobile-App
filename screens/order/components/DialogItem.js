@@ -16,12 +16,12 @@ import { Colors, Sizes, Fonts } from "../../../constant/styles";
 
 const { width, height } = Dimensions.get("screen");
 
-export function DialogItem({}) {
+export function DialogItem({ item }) {
   {
-    acceptDialog();
+    acceptDialog(item);
   }
   {
-    rejectDialog();
+    rejectDialog(item);
   }
 }
 

@@ -19,11 +19,14 @@ import MapView from "./screens/order/MapView";
 import { LogBox } from "react-native";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 /* LogBox.ignoreLogs([
   "ViewPropTypes will be removed",
   "ColorPropType will be removed",
 ]); */
+
+const queryClient = new QueryClient();
 
 const switchNavigator = createSwitchNavigator(
   {
@@ -63,9 +66,11 @@ const AppEnhancer = () => {
 };
 export default () => {
   return (
-    <Provider store={store}>
-      <AppEnhancer />
-      <StatusBar style="auto" />
-    </Provider>
+    <QueryClientProvider client={queryClient}>
+      <Provider store={store}>
+        <AppEnhancer />
+        <StatusBar style="auto" />
+      </Provider>
+    </QueryClientProvider>
   );
 };

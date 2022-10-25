@@ -4,10 +4,11 @@ import {
   Text,
   StyleSheet,
   FlatList,
-  Image,
+  TextInput,
   TouchableOpacity,
   ScrollView,
   Dimensions,
+  ToastAndroid,
 } from "react-native";
 import { Colors, Sizes, Fonts } from "../../../constant/styles";
 import MapView from "react-native-maps";
@@ -15,16 +16,19 @@ import { Marker } from "react-native-maps";
 import { MaterialIcons } from "@expo/vector-icons";
 import Dialog from "react-native-dialog";
 import { useTaskSliceSelector } from "../../../redux/slices/taskSlice";
-import { EmptySkeleton, RenderTaskItem } from "./common";
+import { EmptySkeleton, RenderTaskItem, DialogMyTask } from "./common";
+import { useQuery } from "@tanstack/react-query";
+import { getTasks } from "../../../service/TaskService";
 
 const { width, height } = Dimensions.get("screen");
 
-function TaskList({ list, setShowStartDialog }) {
+function TaskList({ list, setShowStartDialog, setSelectedTask }) {
   function RenderItem({ item }) {
     return (
       <RenderTaskItem
         item={item}
         toggleDialog={() => {
+          setSelectedTask(item);
           setShowStartDialog(true);
         }}
       />
@@ -34,7 +38,7 @@ function TaskList({ list, setShowStartDialog }) {
   return (
     <FlatList
       data={list}
-      keyExtractor={(item) => `${item?.id || item?.job_id}`}
+      keyExtractor={(item) => `${item?._id}`}
       renderItem={RenderItem}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
@@ -46,222 +50,31 @@ function TaskList({ list, setShowStartDialog }) {
 }
 
 const MyTasks = ({ navigation }) => {
-  const { myTasks } = useTaskSliceSelector();
-  const [newOrdersList, setNewOrderList] = React.useState([]);
   const [showStartDialog, setShowStartDialog] = useState(false);
-  const [currentOrderId, setCurrentOrderId] = useState(null);
+  const [showFailedDialog, setShowFailedDialog] = useState(false);
+  const [taskStarted, setTaskStarted] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const { data } = useQuery(["tasks"], getTasks);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#F4F4F4" }}>
-      {(!myTasks || myTasks?.length === 0) && <EmptySkeleton />}
-      <TaskList list={myTasks} setShowStartDialog={setShowStartDialog} />
-      {acceptDialog()}
+      {(!data || data?.length === 0) && <EmptySkeleton />}
+      <TaskList
+        list={data}
+        setShowStartDialog={setShowStartDialog}
+        setSelectedTask={setSelectedTask}
+      />
+      <DialogMyTask
+        showStartDialog={showStartDialog}
+        setShowStartDialog={setShowStartDialog}
+        showFailedDialog={showFailedDialog}
+        setShowFailedDialog={setShowFailedDialog}
+        item={selectedTask}
+        taskStarted={taskStarted}
+        setTaskStarted={setTaskStarted}
+      />
     </View>
   );
-
-  function acceptDialog() {
-    return (
-      <Dialog.Container
-        visible={showStartDialog}
-        contentStyle={styles.dialogContainerStyle}
-        headerStyle={{ margin: 0.0, padding: 0.0 }}
-      >
-        <View
-          style={{
-            backgroundColor: "white",
-            height: height - 120,
-            borderRadius: Sizes.fixPadding,
-          }}
-        >
-          {orderId()}
-          <ScrollView showsVerticalScrollIndicator={false}>
-            {orderDetail()}
-            {locationDetail()}
-            {templateDetail()}
-            
-          </ScrollView>
-          {rejectAndAcceptButton()}
-        </View>
-      </Dialog.Container>
-    );
-  }
-
-  function rejectAndAcceptButton() {
-    return (
-      <View style={styles.rejectAndAcceptButtonWrapStyle}>
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={() => {
-            setShowStartDialog(false);
-          }}
-          style={styles.rejectButtonStyle}
-        >
-          <Text style={{ ...Fonts.blackColor18Medium }}>Cancel</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={() => {
-            let filterArray = newOrdersList.filter((val, i) => {
-              if (val.id !== currentOrderId) {
-                return val;
-              }
-            });
-            setNewOrderList(filterArray);
-            setShowStartDialog(false);
-          }}
-          style={styles.modalAcceptButtonStyle}
-        >
-          <Text style={{ ...Fonts.whiteColor18Medium }}>Start</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  function templateDetail() {
-    return (
-      <View style={styles.detailWrapStyle}>
-        <View style={styles.detailHeaderWrapStyle}>
-          <Text style={{ ...Fonts.blackColor17Medium }}>Template Detail</Text>
-        </View>
-        <View style={styles.detailDescriptionWrapStyle}>
-          <View style={{ ...styles.detailSpecificWrapStyle }}>
-            <Text style={{ ...Fonts.blackColor15Medium }}>Name</Text>
-            <Text style={{ ...Fonts.blackColor15Medium }}>Allison Perry</Text>
-          </View>
-          <View style={{ ...styles.detailSpecificWrapStyle }}>
-            <Text style={{ ...Fonts.blackColor15Medium }}>Phone</Text>
-            <Text style={{ ...Fonts.blackColor15Medium }}>123456789</Text>
-          </View>
-        </View>
-      </View>
-    );
-  }
-
-  function locationDetail() {
-    var position = {
-      latitude: 37.78825,
-      longitude: -122.4324,
-    };
-    return (
-      <View style={styles.detailWrapStyle}>
-        <View style={styles.detailHeaderWrapStyle}>
-          <Text style={{ ...Fonts.blackColor17Medium }}>Location</Text>
-        </View>
-        <View style={styles.detailDescriptionWrapStyle}>
-          <MapView
-            style={{ height: 250 }}
-            initialRegion={{
-              latitude: position.latitude,
-              longitude: position.longitude,
-              latitudeDelta: 0.0922,
-              longitudeDelta: 0.0421,
-            }}
-          >
-            <Marker
-              coordinate={position}
-              title={"Your Location"}
-              description={"Your Location"}
-            />
-          </MapView>
-          <View style={{ flexDirection: "row", marginTop: 10 }}>
-            <MaterialIcons name="place" size={24} color="black" />
-            <Text style={{ ...Fonts.blackColor15Medium }}>
-              28 Mott Street, Bogota, Colombia
-            </Text>
-          </View>
-        </View>
-      </View>
-    );
-  }
-
-  function orderDetail() {
-    return (
-      <View style={styles.detailWrapStyle}>
-        <View style={styles.detailHeaderWrapStyle}>
-          <Text style={{ ...Fonts.blackColor17Medium }}>Order</Text>
-        </View>
-
-        <View style={{ flexDirection: "row" }}>
-          <View style={{ marginLeft: Sizes.fixPadding, flex: 1 }}>
-            {/* <Text style={{ ...Fonts.blackColor18Medium }}>
-            {truncateText(item?.id, 10)}
-          </Text> */}
-            <View style={{ marginTop: Sizes.fixPadding - 4 }}>
-              <Text style={{ ...Fonts.grayColor12Medium }}>Team:</Text>
-              <Text style={{ ...Fonts.blackColor14Medium }}>
-                {/* {truncateText(item?.team_name_, 20)} */}
-                TestTeam
-              </Text>
-            </View>
-            <View style={{ marginTop: Sizes.fixPadding - 4 }}>
-              <Text style={{ ...Fonts.grayColor12Medium }}>Customer name:</Text>
-              <Text
-                style={{ ...Fonts.blackColor14Medium, flex: 1 }}
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
-                {/* {truncateText(item?.customer_name_, 20)} */}
-                TestName
-              </Text>
-            </View>
-            <View style={{ marginTop: Sizes.fixPadding - 4 }}>
-              <Text style={{ ...Fonts.grayColor12Medium }}>Template:</Text>
-              <Text style={{ ...Fonts.blackColor14Medium }}>
-                {/* {truncateText(item?.template_name_, 20)} */}
-                TestTemplate
-              </Text>
-            </View>
-          </View>
-
-          <View style={{ flex: 1, marginTop: 15 }}>
-            <View
-              style={{
-                marginTop: Sizes.fixPadding - 4,
-                marginBottom: Sizes.fixPadding - 9.0,
-              }}
-            >
-              <Text style={{ ...Fonts.blackColor14Medium }}>
-                {
-                  /* `@ ${
-              dayjs().isBefore(item?.datetime_start_before_)
-                ? "On Time"
-                : "Delayed"
-            }` */
-                  "@ On Time"
-                }
-              </Text>
-              <View style={{ marginTop: Sizes.fixPadding - 4 }}>
-                <Text style={{ ...Fonts.grayColor12Medium }}>
-                  Start before:
-                </Text>
-                <Text style={{ ...Fonts.blackColor14Medium }}>
-                  {/* {dayjs(item.datetime_start_before_).format(
-                  "DD MMM YYYY hh:mm A"
-                )} */}
-                  12/12/2020 12:00 PM
-                </Text>
-              </View>
-              <View style={{ marginTop: Sizes.fixPadding - 4 }}>
-                <Text style={{ ...Fonts.grayColor12Medium }}>End before:</Text>
-                <Text style={{ ...Fonts.blackColor14Medium }}>
-                  {/* {dayjs(item.datetime_end_before_).format("DD MMM YYYY hh:mm A")} */}
-                  12/12/2020 12:00 PM
-                </Text>
-              </View>
-            </View>
-          </View>
-        </View>
-      </View>
-    );
-  }
-
-  function orderId() {
-    return (
-      <View style={styles.detailTitleWrapStyle}>
-        <Text style={{ ...Fonts.whiteColor17Regular }}>OID123456789</Text>
-      </View>
-    );
-  }
 };
 
 const styles = StyleSheet.create({
@@ -328,7 +141,7 @@ const styles = StyleSheet.create({
   },
   dialogContainerStyle: {
     borderRadius: Sizes.fixPadding,
-    width: width - 30,
+    width: width * 0.9,
     alignSelf: "center",
     margin: 0,
     padding: 0,
@@ -406,6 +219,46 @@ const styles = StyleSheet.create({
   map: {
     height: "70%",
     width: "100%",
+  },
+  taskStartedButtonWrapStyle: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: Sizes.fixPadding,
+    marginHorizontal: Sizes.fixPadding * 3.0,
+  },
+  failedButtonStyle: {
+    flex: 1,
+    backgroundColor: "red",
+    borderRadius: Sizes.fixPadding - 5.0,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: Sizes.fixPadding,
+    marginRight: 5,
+    borderWidth: 1.5,
+    borderColor: "black",
+  },
+  onHoldButtonStyle: {
+    flex: 1,
+    backgroundColor: "#F4CB00",
+    borderRadius: Sizes.fixPadding - 5.0,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: Sizes.fixPadding,
+    marginHorizontal: 5,
+    borderWidth: 1.5,
+    borderColor: "black",
+  },
+  succesfullButtonStyle: {
+    flex: 1,
+    backgroundColor: "green",
+    borderRadius: Sizes.fixPadding - 5.0,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: Sizes.fixPadding,
+    marginLeft: 5,
+    borderWidth: 1.5,
+    borderColor: "black",
   },
 });
 

@@ -79,6 +79,7 @@ const styles = StyleSheet.create({
   image: {
     height: 20,
     width: 20,
+    left: 3,
   },
   badge: {
     flexDirection: "row",
@@ -90,6 +91,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     marginTop: 40,
+    paddingLeft: 5,
   },
   selectedBadge: {
     flexDirection: "row",
