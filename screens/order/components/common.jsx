@@ -18,6 +18,8 @@ import { truncateText } from "../../../helpers/utils";
 import dayjs from "dayjs";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import StatusButton from "../../../components/StatusButton";
+import { updateTask } from "../../../service/TaskService";
+import { useQueryClient } from "@tanstack/react-query";
 
 const { width, height } = Dimensions.get("screen");
 
@@ -165,6 +167,7 @@ export const DialogOpenTask = ({
   showRejectDialog,
   setShowRejectDialog,
 }) => {
+  const queryClient = useQueryClient();
   return (
     <View>
       {acceptDialog()}
@@ -256,6 +259,9 @@ export const DialogOpenTask = ({
         onBackdropPress={() => {
           setShowAcceptDialog(false);
         }}
+        onRequestClose={() => {
+          setShowAcceptDialog(false);
+        }}
       >
         <View
           style={{
@@ -294,6 +300,11 @@ export const DialogOpenTask = ({
           activeOpacity={0.9}
           onPress={() => {
             setShowAcceptDialog(false);
+            const update = {
+              job_status_: "assigned",
+            };
+            updateTask(item._id, update);
+            queryClient.refetchQueries(["tasks"]);
           }}
           style={styles.modalAcceptButtonStyle}
         >
@@ -324,10 +335,18 @@ export const DialogOpenTask = ({
   }
 
   function locationDetail() {
-    var position = {
-      latitude: truncateText(item?.job_latitude_, 20),
-      longitude: truncateText(item?.job_latitude_, 20),
-    };
+    if (item?.job_latitude_ && item?.job_longitude_) {
+      var position = {
+        latitude: item?.job_latitude_,
+        longitude: item?.job_longitude_,
+      };
+    } else {
+      var position = {
+        latitude: 4.694911163931887,
+        longitude: -74.08622110666725,
+      };
+    }
+
     return (
       <View style={styles.detailWrapStyle}>
         <View style={styles.detailHeaderWrapStyle}>
@@ -351,7 +370,7 @@ export const DialogOpenTask = ({
           <View style={{ flexDirection: "row", marginTop: 10 }}>
             <MaterialIcons name="place" size={24} color="black" />
             <Text style={{ ...Fonts.blackColor15Medium }}>
-              {truncateText(item?.job_address_, 20)}
+              {truncateText(item?.job_address_, 30)}
             </Text>
           </View>
         </View>
@@ -367,7 +386,7 @@ export const DialogOpenTask = ({
         </View>
         <View style={styles.detailDescriptionWrapStyle}>
           <Text style={{ ...Fonts.blackColor14Regular }}>
-            {truncateText(item?.job_description_, 20)}
+            {truncateText(item?.job_description_, 1000)}
           </Text>
         </View>
       </View>
@@ -426,7 +445,7 @@ export const DialogOpenTask = ({
                   Start before:
                 </Text>
                 <Text style={{ ...Fonts.blackColor14Medium }}>
-                  {dayjs(item.datetime_start_before_).format(
+                  {dayjs(item?.datetime_start_before_).format(
                     "DD MMM YYYY hh:mm A"
                   )}
                 </Text>
@@ -434,7 +453,7 @@ export const DialogOpenTask = ({
               <View style={{ marginTop: Sizes.fixPadding - 4 }}>
                 <Text style={{ ...Fonts.grayColor12Medium }}>End before:</Text>
                 <Text style={{ ...Fonts.blackColor14Medium }}>
-                  {dayjs(item.datetime_end_before_).format(
+                  {dayjs(item?.datetime_end_before_).format(
                     "DD MMM YYYY hh:mm A"
                   )}
                 </Text>
@@ -463,9 +482,12 @@ export const DialogMyTask = ({
   showFailedDialog,
   setShowFailedDialog,
   item,
-  taskStarted,
-  setTaskStarted,
 }) => {
+  const queryClient = useQueryClient();
+  /* const [taskStarted, setTaskStarted] = useState(false);
+  if (item?.job_status_ === "inprogress") {
+    setTaskStarted(true);
+  } */
   return (
     <View>
       {acceptDialog()}
@@ -532,6 +554,11 @@ export const DialogMyTask = ({
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={() => {
+            const update = {
+              job_status_: "failed",
+            };
+            updateTask(item._id, update);
+            queryClient.refetchQueries(["tasks"]);
             setShowFailedDialog(false);
           }}
           style={styles.sendButtonStyle}
@@ -558,9 +585,6 @@ export const DialogMyTask = ({
         visible={showStartDialog}
         contentStyle={styles.dialogContainerStyle}
         headerStyle={{ margin: 0.0, padding: 0.0 }}
-        onBackdropPress={() => {
-          setShowStartDialog(false);
-        }}
       >
         <View
           style={{
@@ -576,7 +600,9 @@ export const DialogMyTask = ({
             {locationDetail()}
             {templateDetail()}
           </ScrollView>
-          {taskStarted ? taskStartedButtons() : cancelAndStartButton()}
+          {item?.job_status_ == "inprogress"
+            ? taskStartedButtons()
+            : cancelAndStartButton()}
         </View>
       </Dialog.Container>
     );
@@ -607,6 +633,11 @@ export const DialogMyTask = ({
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={() => {
+            const update = {
+              job_status_: "completed",
+            };
+            updateTask(item._id, update);
+            queryClient.refetchQueries(["tasks"]);
             setShowStartDialog(false);
           }}
           style={styles.succesfullButtonStyle}
@@ -632,8 +663,13 @@ export const DialogMyTask = ({
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={() => {
-            setTaskStarted(true);
-            showToastOrder(123);
+            //setTaskStarted(true);
+            showToastOrder(item?._id);
+            const update = {
+              job_status_: "inprogress",
+            };
+            updateTask(item._id, update);
+            queryClient.refetchQueries(["tasks"]);
           }}
           style={styles.modalAcceptButtonStyle}
         >
@@ -664,10 +700,17 @@ export const DialogMyTask = ({
   }
 
   function locationDetail() {
-    var position = {
-      latitude: truncateText(item?.job_latitude_, 20),
-      longitude: truncateText(item?.job_latitude_, 20),
-    };
+    if (item?.job_latitude_ && item?.job_longitude_) {
+      var position = {
+        latitude: item?.job_latitude_,
+        longitude: item?.job_longitude_,
+      };
+    } else {
+      var position = {
+        latitude: 4.694911163931887,
+        longitude: -74.08622110666725,
+      };
+    }
     return (
       <View style={styles.detailWrapStyle}>
         <View style={styles.detailHeaderWrapStyle}>
@@ -691,7 +734,7 @@ export const DialogMyTask = ({
           <View style={{ flexDirection: "row", marginTop: 10 }}>
             <MaterialIcons name="place" size={24} color="black" />
             <Text style={{ ...Fonts.blackColor15Medium }}>
-              {truncateText(item?.job_address_, 20)}
+              {truncateText(item?.job_address_, 30)}
             </Text>
           </View>
         </View>
@@ -707,7 +750,7 @@ export const DialogMyTask = ({
         </View>
         <View style={styles.detailDescriptionWrapStyle}>
           <Text style={{ ...Fonts.blackColor14Regular }}>
-            {item?.job_description_}
+            {truncateText(item?.job_description_, 1000)}
           </Text>
         </View>
       </View>
@@ -766,7 +809,7 @@ export const DialogMyTask = ({
                   Start before:
                 </Text>
                 <Text style={{ ...Fonts.blackColor14Medium }}>
-                  {dayjs(item.datetime_start_before_).format(
+                  {dayjs(item?.datetime_start_before_).format(
                     "DD MMM YYYY hh:mm A"
                   )}
                 </Text>
@@ -774,7 +817,7 @@ export const DialogMyTask = ({
               <View style={{ marginTop: Sizes.fixPadding - 4 }}>
                 <Text style={{ ...Fonts.grayColor12Medium }}>End before:</Text>
                 <Text style={{ ...Fonts.blackColor14Medium }}>
-                  {dayjs(item.datetime_end_before_).format(
+                  {dayjs(item?.datetime_end_before_).format(
                     "DD MMM YYYY hh:mm A"
                   )}
                 </Text>
@@ -802,6 +845,7 @@ export const DialogHistoryTask = ({
   setShowViewDialog,
   item,
 }) => {
+  const queryClient = useQueryClient();
   return <View>{acceptDialog()}</View>;
   function acceptDialog() {
     return (
@@ -810,6 +854,9 @@ export const DialogHistoryTask = ({
         contentStyle={styles.dialogContainerStyle}
         headerStyle={{ margin: 0.0, padding: 0.0 }}
         onBackdropPress={() => {
+          setShowViewDialog(false);
+        }}
+        onRequestClose={() => {
           setShowViewDialog(false);
         }}
       >
@@ -870,47 +917,17 @@ export const DialogHistoryTask = ({
   }
 
   function locationDetail() {
-    var position = {
-      latitude: 37.78825,
-      longitude: -122.4324,
-    };
-    return (
-      <View style={styles.detailWrapStyle}>
-        <View style={styles.detailHeaderWrapStyle}>
-          <Text style={{ ...Fonts.blackColor17Medium }}>Location</Text>
-        </View>
-        <View style={styles.detailDescriptionWrapStyle}>
-          <MapView
-            style={{ height: 250 }}
-            initialRegion={{
-              latitude: position.latitude,
-              longitude: position.longitude,
-              latitudeDelta: 0.0922,
-              longitudeDelta: 0.0421,
-            }}
-          >
-            <Marker
-              coordinate={position}
-              title={"Your Location"}
-              description={"Your Location"}
-            />
-          </MapView>
-          <View style={{ flexDirection: "row", marginTop: 10 }}>
-            <MaterialIcons name="place" size={24} color="black" />
-            <Text style={{ ...Fonts.blackColor15Medium }}>
-              28 Mott Street, Bogota, Colombia
-            </Text>
-          </View>
-        </View>
-      </View>
-    );
-  }
-
-  function locationDetail() {
-    var position = {
-      latitude: truncateText(item?.job_latitude_, 20),
-      longitude: truncateText(item?.job_latitude_, 20),
-    };
+    if (item?.job_latitude_ && item?.job_longitude_) {
+      var position = {
+        latitude: item?.job_latitude_,
+        longitude: item?.job_longitude_,
+      };
+    } else {
+      var position = {
+        latitude: 4.694911163931887,
+        longitude: -74.08622110666725,
+      };
+    }
     return (
       <View style={styles.detailWrapStyle}>
         <View style={styles.detailHeaderWrapStyle}>
@@ -934,7 +951,7 @@ export const DialogHistoryTask = ({
           <View style={{ flexDirection: "row", marginTop: 10 }}>
             <MaterialIcons name="place" size={24} color="black" />
             <Text style={{ ...Fonts.blackColor15Medium }}>
-              {truncateText(item?.job_address_, 20)}
+              {truncateText(item?.job_address_, 30)}
             </Text>
           </View>
         </View>
@@ -950,7 +967,7 @@ export const DialogHistoryTask = ({
         </View>
         <View style={styles.detailDescriptionWrapStyle}>
           <Text style={{ ...Fonts.blackColor14Regular }}>
-            {item?.job_description_}
+            {truncateText(item?.job_description_, 1000)}
           </Text>
         </View>
       </View>
@@ -1009,7 +1026,7 @@ export const DialogHistoryTask = ({
                   Start before:
                 </Text>
                 <Text style={{ ...Fonts.blackColor14Medium }}>
-                  {dayjs(item.datetime_start_before_).format(
+                  {dayjs(item?.datetime_start_before_).format(
                     "DD MMM YYYY hh:mm A"
                   )}
                 </Text>
@@ -1017,7 +1034,7 @@ export const DialogHistoryTask = ({
               <View style={{ marginTop: Sizes.fixPadding - 4 }}>
                 <Text style={{ ...Fonts.grayColor12Medium }}>End before:</Text>
                 <Text style={{ ...Fonts.blackColor14Medium }}>
-                  {dayjs(item.datetime_end_before_).format(
+                  {dayjs(item?.datetime_end_before_).format(
                     "DD MMM YYYY hh:mm A"
                   )}
                 </Text>

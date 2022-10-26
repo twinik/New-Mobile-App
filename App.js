@@ -58,10 +58,6 @@ const switchNavigator = createSwitchNavigator(
 const App = createAppContainer(switchNavigator);
 
 const AppEnhancer = () => {
-  // useEffect(() => {
-  //   onAuthStateChanged(auth, () => {
-  //   });
-  // }, []);
   return <App />;
 };
 export default () => {

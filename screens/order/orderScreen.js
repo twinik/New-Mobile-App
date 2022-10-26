@@ -1,5 +1,3 @@
-import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
-import { database } from "../../config/firebase";
 import React, { Component, useState, useEffect } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
@@ -15,7 +13,7 @@ import { withNavigation } from "react-navigation";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Colors, Fonts, Sizes } from "../../constant/styles";
 import { TabView, TabBar } from "react-native-tab-view";
-
+import Lottie from "lottie-react-native";
 import OpenTasks from "./components/OpenTasks";
 import MyTasks from "./components/MyTasks";
 import HistoryTasks from "./components/HistoryTasks";
@@ -25,27 +23,18 @@ import Headerx from "./header";
 import BottomSheetComponente from "./BottomSheet";
 import { getAgentTasksAction } from "../../redux/slices/taskSlice";
 import { logoutAction } from "../../redux/slices/authSlice";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getTasks } from "../../service/TaskService";
 
 const { width } = Dimensions.get("screen");
 
 const OrdersScreen = ({ navigation }) => {
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    (async () => {
-      dispatch(getAgentTasksAction());
-      console.log("getAgentTasksAction");
-    })();
-  }, []);
-
   function AddTaskButton() {
     return (
       <TouchableOpacity
         activeOpacity={0.9}
-        // onPress={() => {
-        //     if (darkMapStyle==false){ setdarkMapStyle(true); }
-        //     else { setdarkMapStyle(false)  }
-        // }}
         style={{
           bottom: 100.0,
           ...styles.iconWrapStyle,
@@ -65,7 +54,6 @@ const OrdersScreen = ({ navigation }) => {
     <SafeAreaView style={{ flex: 1 }}>
       <StatusBar backgroundColor={Colors.primaryColor} />
       <Headerx />
-
       <Orders navigation={navigation} />
       <BottomSheetComponente />
       <AddTaskButton />
@@ -74,24 +62,83 @@ const OrdersScreen = ({ navigation }) => {
 };
 
 const Orders = ({ navigation }) => {
-  const dispatch = useDispatch();
+  const queryClient = useQueryClient();
+
   const [index, setIndex] = useState(0);
   const [routes] = useState([
     { key: "first", title: "Open " },
     { key: "second", title: "My Tasks " },
     { key: "third", title: "History" },
   ]);
+  const { data, isLoading, error, isError, isFetching } = useQuery(
+    ["tasks"],
+    getTasks
+  );
+
+  const [createdTasks, setCreatedTasks] = useState([]);
+  const [assignedTasks, setAssignedTasks] = useState([]);
+  const [completedTasks, setCompletedTasks] = useState([]);
+
+  useEffect(() => {
+    filterTasks();
+  }, [data]);
+
+  const filterTasks = () => {
+    const createdTasks = data?.filter((task) => task.job_status_ == "created");
+    setCreatedTasks(createdTasks);
+    const assignedTasks = data?.filter(
+      (task) =>
+        task.job_status_ == "assigned" || task.job_status_ == "inprogress"
+    );
+    setAssignedTasks(assignedTasks);
+    const completedTasks = data?.filter(
+      (task) => task.job_status_ == "failed" || task.job_status_ == "completed"
+    );
+    setCompletedTasks(completedTasks);
+  };
 
   const renderScene = ({ route, jumpTo }) => {
     switch (route.key) {
       case "first":
-        return <OpenTasks navigation={navigation} />;
+        return <OpenTasks navigation={navigation} data={createdTasks} />;
       case "second":
-        return <MyTasks navigation={navigation} />;
+        return <MyTasks navigation={navigation} data={assignedTasks} />;
       case "third":
-        return <HistoryTasks navigation={navigation} />;
+        return <HistoryTasks navigation={navigation} data={completedTasks} />;
     }
   };
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1 }}>
+        <Lottie
+          source={require("../../assets/animations/loading.json")}
+          autoPlay
+          loop
+        />
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <Text>Error: {error.message}</Text>
+      </View>
+    );
+  }
+
+  if (isFetching) {
+    return (
+      <View style={{ flex: 1 }}>
+        <Lottie
+          source={require("../../assets/animations/loading.json")}
+          autoPlay
+          loop
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1 }}>

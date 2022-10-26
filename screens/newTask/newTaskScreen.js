@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import {
   TouchableOpacity,
   SafeAreaView,
@@ -6,7 +6,7 @@ import {
   StyleSheet,
   View,
   Text,
-  FlatList,
+  Platform,
   Dimensions,
   Alert,
 } from "react-native";
@@ -19,7 +19,22 @@ import { useDispatch } from "react-redux";
 import { updateNewTaskField } from "../../features/OrderFilters/newTaskSlice";
 import moment from "moment";
 
+import { Formik } from "formik";
+import * as Yup from "yup";
+import RNPickerSelect from "react-native-picker-select";
+import DateTimePicker from "@react-native-community/datetimepicker";
+
 const { width } = Dimensions.get("screen");
+
+const validations = Yup.object().shape({
+  startDate: Yup.string().required("Required"),
+  endDate: Yup.string().required("Required"),
+  customer: Yup.string().required("Required"),
+  team: Yup.string().required("Required"),
+  template: Yup.string().required("Required"),
+  jobDescription: Yup.string().required("Required"),
+  yourLocation: Yup.string().required("Required"),
+});
 
 const calcSlots = (calcDate, slotInterval, add1) => {
   //console.log(calcDate)
@@ -106,10 +121,59 @@ const NewTask = ({ navigation }) => {
       }
     }
   }
+  //Datetime picker
+  const actualDate = moment().format("MM/DD/YYYY");
+  const actualTime = moment().format("hh:mm A");
+  const actualTimePlus15 = moment().add(15, "minutes").format("hh:mm A");
+
+  const [date, setDate] = useState(new Date());
+  const [mode, setMode] = useState("date");
+  const [show, setShow] = useState(false);
+  const [fDateStart, setFDateStart] = useState(actualDate);
+  const [fTimeStart, setFTimeStart] = useState(actualTime);
+  const [fDateEnd, setFDateEnd] = useState(actualDate);
+  const [fTimeEnd, setFTimeEnd] = useState(actualTimePlus15);
+
+  const onChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setShow(Platform.OS === "ios");
+    setDate(currentDate);
+
+    let tempDate = new Date(currentDate);
+    let fDate =
+      tempDate.getMonth() +
+      1 +
+      "/" +
+      (tempDate.getDate() + 1) +
+      "/" +
+      tempDate.getFullYear();
+    let fTime = tempDate.getHours() + ":" + tempDate.getMinutes();
+    setFDateStart(fDate);
+    setFTimeStart(fTime);
+    console.log(fDate + " (" + fTime + ")");
+  };
+
+  const showMode = (currentMode) => {
+    setShow(true);
+    setMode(currentMode);
+  };
+
+  const showDatepicker = () => {
+    showMode("date");
+  };
+
+  const showTimepicker = () => {
+    showMode("time");
+  };
+  //End Datetime picker
+
+  const handleSubmit = (values) => {
+    //Handle submit
+  };
 
   const dispatch = useDispatch();
 
-  useEffect(() => {
+  /* useEffect(() => {
     dispatch(
       updateNewTaskField({
         key: "job_inicio_plan_date",
@@ -128,200 +192,244 @@ const NewTask = ({ navigation }) => {
       updateNewTaskField({ key: "job_fin_plan_time", value: fisrtsSlotEB })
     );
     dispatch(updateNewTaskField({ key: "slotsEB", value: slotsEB }));
-  }, []);
+  }, []); */
 
   function selectDateInfo() {
     return (
-      <View>
-        <View
-          style={{
-            backgroundColor: Colors.blackColor,
-            width: width,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginLeft: 10,
-            }}
-          >
-            <MaterialCommunityIcons
-              name="numeric-1-circle-outline"
-              size={22}
-              color={Colors.whiteColor}
-            />
-            <Text
-              style={{
-                ...Fonts.whiteColor17Regular,
-                marginVertical: Sizes.fixPadding,
-                marginLeft: 10,
-              }}
-            >
-              Dates Selection
-            </Text>
-          </View>
-          <View style={styles.startAndEndDateWrapStyle}>
-            <TouchableOpacity
-              activeOpacity={0.9}
-              onPress={() => navigation.navigate("TimeSlotScreenStartBefore")}
-              style={{
-                paddingLeft: Sizes.fixPadding * 2.0,
-                ...styles.startAndEndDateStyle,
-                alignItems: "center",
-                alignContent: "center",
-              }}
-            >
-              <View>
-                <Text
-                  style={{
-                    ...Fonts.blackColor15Bold,
-                    paddingBottom: Sizes.fixPadding - 5.0,
-                  }}
-                >
-                  START DATE
-                </Text>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <MaterialCommunityIcons
-                    name="calendar"
-                    size={17}
-                    color={Colors.grayColor}
-                  />
-                  <Text
-                    style={{
-                      ...Fonts.blackColor14Regular,
-                      alignContent: "center",
-                      marginLeft: 5,
-                    }}
-                  >
-                    {moment(stateNewtask[0]["job_inicio_plan_date"])
-                      .format("MM-DD-YYYY")
-                      .toString()}
-                  </Text>
-                </View>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <MaterialCommunityIcons
-                    name="clock"
-                    size={17}
-                    color={Colors.grayColor}
-                  />
-                  <Text
-                    style={{
-                      ...Fonts.blackColor14Regular,
-                      alignContent: "center",
-                      marginLeft: 5,
-                    }}
-                  >
-                    {stateNewtask[0]["job_inicio_plan_time"]}
-                  </Text>
-                </View>
-              </View>
-              <MaterialIcons
-                name="keyboard-arrow-down"
-                size={22}
-                color={Colors.grayColor}
-              />
-            </TouchableOpacity>
+      <Formik
+        initialValues={{
+          startDate: "",
+          endDate: "",
+          customer: "",
+          team: "",
+          template: "",
+          jobDescription: "",
+          yourLocation: "",
+        }}
+        onSubmit={(values) => handleSubmit(values)}
+        validationSchema={validations}
+      >
+        {({
+          handleChange,
+          handleBlur,
+          handleSubmit,
+          setFieldValue,
+          values,
+          errors,
+          touched,
+        }) => (
+          <View>
             <View
               style={{
                 backgroundColor: Colors.blackColor,
-                width: 1.0,
-                height: 90.0,
-              }}
-            ></View>
-            <TouchableOpacity
-              activeOpacity={0.9}
-              onPress={() => navigation.navigate("TimeSlotScreenEndBefore")}
-              style={{
-                paddingRight: Sizes.fixPadding * 2.0,
-                ...styles.startAndEndDateStyle,
-                alignItems: "center",
-                alignContent: "center",
+                width: width,
               }}
             >
-              <View>
+              <View // 1-Date selection
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginLeft: 10,
+                }}
+              >
+                <MaterialCommunityIcons
+                  name="numeric-1-circle-outline"
+                  size={22}
+                  color={Colors.whiteColor}
+                />
                 <Text
                   style={{
-                    ...Fonts.blackColor15Bold,
-                    paddingBottom: Sizes.fixPadding - 5.0,
+                    ...Fonts.whiteColor17Regular,
+                    marginVertical: Sizes.fixPadding,
+                    marginLeft: 10,
                   }}
                 >
-                  END DATE
+                  Dates Selection
                 </Text>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <MaterialCommunityIcons
-                    name="calendar"
-                    size={17}
-                    color={Colors.grayColor}
-                  />
-                  <Text
-                    style={{
-                      ...Fonts.blackColor14Regular,
-                      alignContent: "center",
-                      marginLeft: 5,
-                    }}
-                  >
-                    {moment(stateNewtask[0]["job_fin_plan_date"])
-                      .format("MM-DD-YYYY")
-                      .toString()}
-                  </Text>
-                </View>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <MaterialCommunityIcons
-                    name="clock"
-                    size={17}
-                    color={Colors.grayColor}
-                  />
-                  <Text
-                    style={{
-                      ...Fonts.blackColor14Regular,
-                      alignContent: "center",
-                      marginLeft: 5,
-                    }}
-                  >
-                    {stateNewtask[0]["job_fin_plan_time"]}
-                  </Text>
-                </View>
               </View>
-              <MaterialIcons
-                name="keyboard-arrow-down"
-                size={22}
-                color={Colors.grayColor}
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
+              <View style={styles.startAndEndDateWrapStyle}>
+                <TouchableOpacity
+                  activeOpacity={0.9}
+                  onPress={showDatepicker}
+                  style={{
+                    paddingLeft: Sizes.fixPadding * 2.0,
+                    ...styles.startAndEndDateStyle,
+                    alignItems: "center",
+                    alignContent: "center",
+                  }}
+                >
+                  <View>
+                    <Text
+                      style={{
+                        ...Fonts.blackColor15Bold,
+                        paddingBottom: Sizes.fixPadding - 5.0,
+                      }}
+                    >
+                      START DATE
+                    </Text>
+                    <View
+                      style={{ flexDirection: "row", alignItems: "center" }}
+                    >
+                      <MaterialCommunityIcons
+                        name="calendar"
+                        size={17}
+                        color={Colors.grayColor}
+                      />
+                      <Text
+                        style={{
+                          ...Fonts.blackColor14Regular,
+                          alignContent: "center",
+                          marginLeft: 5,
+                        }}
+                      >
+                        {fDateStart}
+                      </Text>
+                    </View>
+                    <View
+                      style={{ flexDirection: "row", alignItems: "center" }}
+                    >
+                      <MaterialCommunityIcons
+                        name="clock"
+                        size={17}
+                        color={Colors.grayColor}
+                      />
+                      <Text
+                        style={{
+                          ...Fonts.blackColor14Regular,
+                          alignContent: "center",
+                          marginLeft: 5,
+                        }}
+                      >
+                        {fTimeStart}
+                      </Text>
+                    </View>
+                    {show && (
+                      <DateTimePicker
+                        testID="dateTimePicker"
+                        value={date}
+                        mode={mode}
+                        is24Hour={true}
+                        onChange={onChange}
+                      />
+                    )}
+                  </View>
+                  <MaterialIcons
+                    name="keyboard-arrow-down"
+                    size={22}
+                    color={Colors.grayColor}
+                  />
+                </TouchableOpacity>
+                <View
+                  style={{
+                    backgroundColor: Colors.blackColor,
+                    width: 1.0,
+                    height: 90.0,
+                  }}
+                ></View>
+                <TouchableOpacity
+                  activeOpacity={0.9}
+                  onPress={showDatepicker}
+                  style={{
+                    paddingRight: Sizes.fixPadding * 2.0,
+                    ...styles.startAndEndDateStyle,
+                    alignItems: "center",
+                    alignContent: "center",
+                  }}
+                >
+                  <View>
+                    <Text
+                      style={{
+                        ...Fonts.blackColor15Bold,
+                        paddingBottom: Sizes.fixPadding - 5.0,
+                      }}
+                    >
+                      END DATE
+                    </Text>
+                    <View
+                      style={{ flexDirection: "row", alignItems: "center" }}
+                    >
+                      <MaterialCommunityIcons
+                        name="calendar"
+                        size={17}
+                        color={Colors.grayColor}
+                      />
+                      <Text
+                        style={{
+                          ...Fonts.blackColor14Regular,
+                          alignContent: "center",
+                          marginLeft: 5,
+                        }}
+                      >
+                        {fDateEnd}
+                      </Text>
+                    </View>
+                    {show && (
+                      <DateTimePicker
+                        testID="dateTimePicker"
+                        value={date}
+                        mode={mode}
+                        is24Hour={true}
+                        onChange={onChange}
+                      />
+                    )}
+                    <View
+                      style={{ flexDirection: "row", alignItems: "center" }}
+                    >
+                      <MaterialCommunityIcons
+                        name="clock"
+                        size={17}
+                        color={Colors.grayColor}
+                      />
+                      <Text
+                        style={{
+                          ...Fonts.blackColor14Regular,
+                          alignContent: "center",
+                          marginLeft: 5,
+                        }}
+                      >
+                        {fTimeEnd}
+                      </Text>
+                    </View>
+                  </View>
+                  <MaterialIcons
+                    name="keyboard-arrow-down"
+                    size={22}
+                    color={Colors.grayColor}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
 
-        <View
-          style={{
-            backgroundColor: Colors.blackColor,
-            width: width,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginLeft: 10,
-            }}
-          >
-            <MaterialCommunityIcons
-              name="numeric-2-circle-outline"
-              size={22}
-              color={Colors.whiteColor}
-            />
-            <Text
+            <View
               style={{
-                ...Fonts.whiteColor17Regular,
-                marginVertical: Sizes.fixPadding,
-                marginLeft: 10,
+                backgroundColor: Colors.blackColor,
+                width: width,
               }}
             >
-              Select Customer
-            </Text>
-          </View>
-          <View>
-            {/* <RNPickerSelect
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginLeft: 10,
+                }}
+              >
+                <MaterialCommunityIcons
+                  name="numeric-2-circle-outline"
+                  size={22}
+                  color={Colors.whiteColor}
+                />
+                <Text
+                  style={{
+                    ...Fonts.whiteColor17Regular,
+                    marginVertical: Sizes.fixPadding,
+                    marginLeft: 10,
+                  }}
+                >
+                  Select Customer
+                </Text>
+              </View>
+              <View>
+                {/* <RNPickerSelect
               onValueChange={(value) => setFieldValue("usertype", value)}
               value={values.usertype}
               useNativeAndroidPickerStyle={true}
@@ -337,9 +445,11 @@ const NewTask = ({ navigation }) => {
                 { label: "Customer 2", value: 1 },
               ]}
             /> */}
+              </View>
+            </View>
           </View>
-        </View>
-      </View>
+        )}
+      </Formik>
     );
   }
 
