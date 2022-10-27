@@ -25,6 +25,7 @@ import * as Location from "expo-location";
 import RNPickerSelect from "react-native-picker-select";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Button } from "react-native-paper";
+import DatePicker from "react-native-modern-datepicker";
 
 const { width } = Dimensions.get("screen");
 
@@ -88,7 +89,7 @@ const calcSlots = (calcDate, slotInterval, add1) => {
 };
 
 const NewTask = ({ navigation }) => {
-  const stateNewtask = useSelector((state) => state.newtaskSlice);
+  /*  const stateNewtask = useSelector((state) => state.newtaskSlice);
   slotsSB = calcSlots(moment(), 30, 0);
 
   // Capturando fecha actual
@@ -122,7 +123,7 @@ const NewTask = ({ navigation }) => {
         fisrtsSlotEB = slotsEB[2][0];
       }
     }
-  }
+  } */
   //Datetime picker
   const actualDate = moment().format("MM/DD/YYYY");
   const actualTime = moment().format("hh:mm A");
@@ -131,46 +132,28 @@ const NewTask = ({ navigation }) => {
   const [date, setDate] = useState(new Date());
   const [mode, setMode] = useState("date");
   const [show, setShow] = useState(false);
-  const [fDateStart, setFDateStart] = useState(actualDate);
-  const [fTimeStart, setFTimeStart] = useState(actualTime);
-  const [fDateEnd, setFDateEnd] = useState(actualDate);
-  const [fTimeEnd, setFTimeEnd] = useState(actualTimePlus15);
+  const [textDate, setTextDate] = useState(actualDate);
 
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
     setShow(Platform.OS === "ios");
     setDate(currentDate);
 
-    let tempDate = new Date(currentDate);
+    let temDate = new Date(currentDate);
     let fDate =
-      tempDate.getMonth() +
-      1 +
+      tempDate.getDate() +
       "/" +
-      (tempDate.getDate() + 1) +
+      (tempDate.getMonth() + 1) +
       "/" +
       tempDate.getFullYear();
     let fTime = tempDate.getHours() + ":" + tempDate.getMinutes();
-    setFDateStart(fDate);
-    setFTimeStart(fTime);
-    console.log(fDate + " (" + fTime + ")");
+    setTextDate(fDate);
+    console.log(fDate, fTime);
   };
 
   const showMode = (currentMode) => {
     setShow(true);
     setMode(currentMode);
-  };
-
-  const showDatepicker = () => {
-    showMode("date");
-  };
-
-  const showTimepicker = () => {
-    showMode("time");
-  };
-  //End Datetime picker
-
-  const handleSubmit = (values) => {
-    //Handle submit
   };
 
   const dispatch = useDispatch();
@@ -197,7 +180,8 @@ const NewTask = ({ navigation }) => {
   }, []); */
 
   function form() {
-    let address = "";
+    //OBTENER ADDRESS ACTUAL
+    /* let address = "";
     const [addressActual, setAddressActual] = useState(address);
     useEffect(() => {
       (async () => {
@@ -212,7 +196,7 @@ const NewTask = ({ navigation }) => {
         console.log("ADDRESS: ", address);
         //setLocation(location);
       })();
-    }, []);
+    }, []); */
 
     return (
       <Formik
@@ -223,7 +207,7 @@ const NewTask = ({ navigation }) => {
           team: "",
           template: "",
           jobDescription: "",
-          yourLocation: addressActual,
+          yourLocation: "Av La Plata 123",
         }}
         onSubmit={(values) => handleSubmit(values)}
         validationSchema={validations}
@@ -270,7 +254,7 @@ const NewTask = ({ navigation }) => {
               <View style={styles.startAndEndDateWrapStyle}>
                 <TouchableOpacity
                   activeOpacity={0.9}
-                  onPress={showDatepicker}
+                  onPress={() => showMode("date")}
                   style={{
                     paddingLeft: Sizes.fixPadding * 2.0,
                     ...styles.startAndEndDateStyle,
@@ -302,25 +286,7 @@ const NewTask = ({ navigation }) => {
                           marginLeft: 5,
                         }}
                       >
-                        {fDateStart}
-                      </Text>
-                    </View>
-                    <View
-                      style={{ flexDirection: "row", alignItems: "center" }}
-                    >
-                      <MaterialCommunityIcons
-                        name="clock"
-                        size={17}
-                        color={Colors.grayColor}
-                      />
-                      <Text
-                        style={{
-                          ...Fonts.blackColor14Regular,
-                          alignContent: "center",
-                          marginLeft: 5,
-                        }}
-                      >
-                        {fTimeStart}
+                        {textDate}
                       </Text>
                     </View>
                     {show && (
@@ -329,6 +295,7 @@ const NewTask = ({ navigation }) => {
                         value={date}
                         mode={mode}
                         is24Hour={true}
+                        display="default"
                         onChange={onChange}
                       />
                     )}
@@ -348,7 +315,7 @@ const NewTask = ({ navigation }) => {
                 ></View>
                 <TouchableOpacity
                   activeOpacity={0.9}
-                  onPress={showDatepicker}
+                  onPress={() => console.log("End Date")}
                   style={{
                     paddingRight: Sizes.fixPadding * 2.0,
                     ...styles.startAndEndDateStyle,
@@ -380,18 +347,10 @@ const NewTask = ({ navigation }) => {
                           marginLeft: 5,
                         }}
                       >
-                        {fDateEnd}
+                        {/* ENDDATE */}
                       </Text>
                     </View>
-                    {show && (
-                      <DateTimePicker
-                        testID="dateTimePicker"
-                        value={date}
-                        mode={mode}
-                        is24Hour={true}
-                        onChange={onChange}
-                      />
-                    )}
+
                     <View
                       style={{ flexDirection: "row", alignItems: "center" }}
                     >
@@ -407,7 +366,7 @@ const NewTask = ({ navigation }) => {
                           marginLeft: 5,
                         }}
                       >
-                        {fTimeEnd}
+                        {/* ENDTIME */}
                       </Text>
                     </View>
                   </View>
@@ -630,7 +589,7 @@ const NewTask = ({ navigation }) => {
                 <TextInput
                   style={{
                     backgroundColor: "white",
-                    borderRadius: 15,
+                    borderRadius: Sizes.fixPadding + 5.0,
                     height: 80,
                     padding: 10,
                   }}
@@ -680,7 +639,7 @@ const NewTask = ({ navigation }) => {
                   editable={false}
                   style={{
                     backgroundColor: "white",
-                    borderRadius: 15,
+                    borderRadius: Sizes.fixPadding + 5.0,
                     height: 80,
                     padding: 10,
                   }}
@@ -742,7 +701,7 @@ const styles = StyleSheet.create({
     width: "50%",
     justifyContent: "center",
     backgroundColor: Colors.whiteColor,
-    borderRadius: 10,
+    borderRadius: Sizes.fixPadding + 5.0,
   },
   btn_box: {
     alignItems: "center",
@@ -814,8 +773,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: Colors.whiteColor,
     borderRadius: Sizes.fixPadding + 5.0,
-    borderColor: Colors.blackColor,
-    height: 90.0,
     borderWidth: 1.0,
     marginLeft: 10,
     marginRight: 10,
@@ -925,13 +882,14 @@ const PickerStyles = StyleSheet.create({
     color: "black",
     paddingRight: 30,
     backgroundColor: "white",
+    borderRadius: Sizes.fixPadding + 5.0,
   },
   inputAndroid: {
     marginLeft: -6.5,
     color: "black",
     padding: 10,
     backgroundColor: "white",
-    borderRadius: 15,
+    borderRadius: Sizes.fixPadding + 5.0,
   },
   placeholder: {
     color: "lightgray",
