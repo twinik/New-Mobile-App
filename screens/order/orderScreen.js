@@ -39,12 +39,12 @@ const OrdersScreen = ({ navigation }) => {
           bottom: 100.0,
           ...styles.iconWrapStyle,
         }}
+        onPress={() => navigation.navigate("NewTask")}
       >
         <MaterialCommunityIcons
           name="plus"
           size={27}
           color={Colors.whiteColor}
-          onPress={() => navigation.navigate("NewTask")}
         />
       </TouchableOpacity>
     );
@@ -112,7 +112,7 @@ const Orders = ({ navigation }) => {
     return (
       <View style={{ flex: 1 }}>
         <Lottie
-          source={require("../../assets/animations/loading.json")}
+          source={require("../../assets/animations/100485-circle-waves-white-dots.json")}
           autoPlay
           loop
         />
@@ -128,17 +128,17 @@ const Orders = ({ navigation }) => {
     );
   }
 
-  if (isFetching) {
+  /* if (isFetching) {
     return (
       <View style={{ flex: 1 }}>
         <Lottie
-          source={require("../../assets/animations/loading.json")}
+          source={require("../../assets/animations/100485-circle-waves-white-dots.json")}
           autoPlay
           loop
         />
       </View>
     );
-  }
+  } */
 
   return (
     <View style={{ flex: 1 }}>

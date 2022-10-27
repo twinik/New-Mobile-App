@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TouchableOpacity,
   SafeAreaView,
@@ -8,7 +8,7 @@ import {
   Text,
   Platform,
   Dimensions,
-  Alert,
+  TextInput,
 } from "react-native";
 import { withNavigation } from "react-navigation";
 import { Colors, Fonts, Sizes } from "../../constant/styles";
@@ -21,8 +21,10 @@ import moment from "moment";
 
 import { Formik } from "formik";
 import * as Yup from "yup";
+import * as Location from "expo-location";
 import RNPickerSelect from "react-native-picker-select";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { Button } from "react-native-paper";
 
 const { width } = Dimensions.get("screen");
 
@@ -194,7 +196,24 @@ const NewTask = ({ navigation }) => {
     dispatch(updateNewTaskField({ key: "slotsEB", value: slotsEB }));
   }, []); */
 
-  function selectDateInfo() {
+  function form() {
+    let address = "";
+    const [addressActual, setAddressActual] = useState(address);
+    useEffect(() => {
+      (async () => {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          setErrorMsg("Permission to access location was denied");
+          return;
+        }
+
+        let location = await Location.getCurrentPositionAsync({});
+        setAddressActual(await Location.reverseGeocodeAsync(location.coords));
+        console.log("ADDRESS: ", address);
+        //setLocation(location);
+      })();
+    }, []);
+
     return (
       <Formik
         initialValues={{
@@ -204,7 +223,7 @@ const NewTask = ({ navigation }) => {
           team: "",
           template: "",
           jobDescription: "",
-          yourLocation: "",
+          yourLocation: addressActual,
         }}
         onSubmit={(values) => handleSubmit(values)}
         validationSchema={validations}
@@ -225,7 +244,8 @@ const NewTask = ({ navigation }) => {
                 width: width,
               }}
             >
-              <View // 1-Date selection
+              {/* 1-Date selection */}
+              <View
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
@@ -399,7 +419,7 @@ const NewTask = ({ navigation }) => {
                 </TouchableOpacity>
               </View>
             </View>
-
+            {/* 2-Customer selection */}
             <View
               style={{
                 backgroundColor: Colors.blackColor,
@@ -428,24 +448,270 @@ const NewTask = ({ navigation }) => {
                   Select Customer
                 </Text>
               </View>
-              <View>
-                {/* <RNPickerSelect
-              onValueChange={(value) => setFieldValue("usertype", value)}
-              value={values.usertype}
-              useNativeAndroidPickerStyle={true}
-              fixAndroidTouchableBug={true}
-              doneText="Accept"
-              style={PickerStyles}
-              placeholder={{
-                label: "Select Customer",
-                value: null,
-              }}
-              items={[
-                { label: "Customer 1", value: 0 },
-                { label: "Customer 2", value: 1 },
-              ]}
-            /> */}
+              <View style={styles.containerSection}>
+                <RNPickerSelect
+                  onValueChange={(value) => setFieldValue("customer", value)}
+                  value={values.customer}
+                  useNativeAndroidPickerStyle={false}
+                  fixAndroidTouchableBug={true}
+                  doneText="Accept"
+                  Icon={() => {
+                    return (
+                      <MaterialIcons
+                        name="keyboard-arrow-down"
+                        size={22}
+                        color={Colors.grayColor}
+                        style={{ marginRight: 10, marginTop: 12 }}
+                      />
+                    );
+                  }}
+                  style={PickerStyles}
+                  placeholder={{
+                    label: "Select Customer...",
+                    value: null,
+                  }}
+                  items={[
+                    { label: "Customer 1", value: 0 },
+                    { label: "Customer 2", value: 1 },
+                  ]}
+                />
               </View>
+            </View>
+
+            <View style={{ flexDirection: "row" }}>
+              {/* 3-Select Team */}
+              <View
+                style={{
+                  flex: 1,
+                  width: width,
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginLeft: 10,
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name="numeric-3-circle-outline"
+                    size={22}
+                    color={Colors.whiteColor}
+                  />
+                  <Text
+                    style={{
+                      ...Fonts.whiteColor17Regular,
+                      marginVertical: Sizes.fixPadding,
+                      marginLeft: 10,
+                    }}
+                  >
+                    Select Team
+                  </Text>
+                </View>
+                <View style={styles.containerSection}>
+                  <RNPickerSelect
+                    onValueChange={(value) => setFieldValue("team", value)}
+                    value={values.team}
+                    useNativeAndroidPickerStyle={false}
+                    fixAndroidTouchableBug={true}
+                    doneText="Accept"
+                    Icon={() => {
+                      return (
+                        <MaterialIcons
+                          name="keyboard-arrow-down"
+                          size={22}
+                          color={Colors.grayColor}
+                          style={{ marginRight: 10, marginTop: 12 }}
+                        />
+                      );
+                    }}
+                    style={PickerStyles}
+                    placeholder={{
+                      label: "Select Team...",
+                      value: null,
+                    }}
+                    items={[
+                      { label: "Team 1", value: 0 },
+                      { label: "Team 2", value: 1 },
+                    ]}
+                  />
+                </View>
+              </View>
+              {/* 4-Select Template */}
+              <View
+                style={{
+                  flex: 1,
+                  backgroundColor: Colors.blackColor,
+                  width: width,
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginLeft: 10,
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name="numeric-4-circle-outline"
+                    size={22}
+                    color={Colors.whiteColor}
+                  />
+                  <Text
+                    style={{
+                      ...Fonts.whiteColor17Regular,
+                      marginVertical: Sizes.fixPadding,
+                      marginLeft: 10,
+                    }}
+                  >
+                    Select Template
+                  </Text>
+                </View>
+                <View style={styles.containerSection}>
+                  <RNPickerSelect
+                    onValueChange={(value) => setFieldValue("template", value)}
+                    value={values.template}
+                    useNativeAndroidPickerStyle={false}
+                    fixAndroidTouchableBug={true}
+                    doneText="Accept"
+                    Icon={() => {
+                      return (
+                        <MaterialIcons
+                          name="keyboard-arrow-down"
+                          size={22}
+                          color={Colors.grayColor}
+                          style={{ marginRight: 10, marginTop: 12 }}
+                        />
+                      );
+                    }}
+                    style={PickerStyles}
+                    placeholder={{
+                      label: "Select Template...",
+                      value: null,
+                    }}
+                    items={[
+                      { label: "template 1", value: 0 },
+                      { label: "template 2", value: 1 },
+                    ]}
+                  />
+                </View>
+              </View>
+            </View>
+            {/* 5-Select JobDescription */}
+            <View
+              style={{
+                backgroundColor: Colors.blackColor,
+                width: width,
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginLeft: 10,
+                }}
+              >
+                <MaterialCommunityIcons
+                  name="numeric-5-circle-outline"
+                  size={22}
+                  color={Colors.whiteColor}
+                />
+                <Text
+                  style={{
+                    ...Fonts.whiteColor17Regular,
+                    marginVertical: Sizes.fixPadding,
+                    marginLeft: 10,
+                  }}
+                >
+                  Job Description
+                </Text>
+              </View>
+              <View style={styles.containerSection}>
+                <TextInput
+                  style={{
+                    backgroundColor: "white",
+                    borderRadius: 15,
+                    height: 80,
+                    padding: 10,
+                  }}
+                  placeholder="Enter Job Description..."
+                  placeholderTextColor={"#d6d6d6"}
+                  multiline={true}
+                  numberOfLines={4}
+                  keyboardAppearance="dark"
+                  returnKeyType="next"
+                  returnKeyLabel="next"
+                  onChangeText={handleChange("jobDescription")}
+                  value={values.jobDescription}
+                />
+              </View>
+            </View>
+            {/* 6-Select YourLocation */}
+            <View
+              style={{
+                backgroundColor: Colors.blackColor,
+                width: width,
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginLeft: 10,
+                }}
+              >
+                <MaterialCommunityIcons
+                  name="numeric-6-circle-outline"
+                  size={22}
+                  color={Colors.whiteColor}
+                />
+                <Text
+                  style={{
+                    ...Fonts.whiteColor17Regular,
+                    marginVertical: Sizes.fixPadding,
+                    marginLeft: 10,
+                  }}
+                >
+                  Your Location
+                </Text>
+              </View>
+              <View style={styles.containerSection}>
+                <TextInput
+                  editable={false}
+                  style={{
+                    backgroundColor: "white",
+                    borderRadius: 15,
+                    height: 80,
+                    padding: 10,
+                  }}
+                  placeholder={values.yourLocation}
+                  multiline={true}
+                  numberOfLines={4}
+                  keyboardAppearance="dark"
+                  returnKeyType="next"
+                  returnKeyLabel="next"
+                  onChangeText={handleChange("yourLocation")}
+                  value={values.yourLocation}
+                />
+              </View>
+            </View>
+            {/* Button Submit */}
+            <View style={styles.btn_box}>
+              <Button
+                style={styles.button}
+                onPress={handleSubmit}
+                color="black"
+              >
+                <Text
+                  style={{
+                    ...Fonts.blackColor19Bold,
+                    marginVertical: Sizes.fixPadding,
+                    marginLeft: 10,
+                  }}
+                >
+                  CREATE TASK
+                </Text>
+              </Button>
             </View>
           </View>
         )}
@@ -456,8 +722,8 @@ const NewTask = ({ navigation }) => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <StatusBar />
-      <View style={{ flex: 1 }}>
-        <Text>{selectDateInfo()}</Text>
+      <View style={{ flex: 1, backgroundColor: Colors.blackColor }}>
+        {form()}
       </View>
     </SafeAreaView>
   );
@@ -466,6 +732,23 @@ const NewTask = ({ navigation }) => {
 NewTask.navigationOptions = () => {};
 
 const styles = StyleSheet.create({
+  containerSection: {
+    paddingRight: 15,
+    paddingLeft: 15,
+    paddingBottom: 10,
+  },
+  button: {
+    height: 50,
+    width: "50%",
+    justifyContent: "center",
+    backgroundColor: Colors.whiteColor,
+    borderRadius: 10,
+  },
+  btn_box: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 20,
+  },
   earningListWrapStyle: {
     top: -10.0,
     left: 0.0,
@@ -633,6 +916,25 @@ const styles = StyleSheet.create({
     height: 55.0,
     marginTop: Sizes.fixPadding + 5.0,
     borderRadius: Sizes.fixPadding + 5.0,
+  },
+});
+
+const PickerStyles = StyleSheet.create({
+  inputIOS: {
+    marginLeft: -6.5,
+    color: "black",
+    paddingRight: 30,
+    backgroundColor: "white",
+  },
+  inputAndroid: {
+    marginLeft: -6.5,
+    color: "black",
+    padding: 10,
+    backgroundColor: "white",
+    borderRadius: 15,
+  },
+  placeholder: {
+    color: "lightgray",
   },
 });
 

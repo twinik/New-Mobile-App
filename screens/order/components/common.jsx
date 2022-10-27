@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Dimensions,
   TextInput,
   ToastAndroid,
+  RefreshControl,
 } from "react-native";
 import Dialog from "react-native-dialog";
 import MapView from "react-native-maps";
@@ -139,24 +140,42 @@ export const RenderTaskItem = ({ item, toggleDialog }) => {
 };
 
 export const EmptySkeleton = ({ message }) => {
+  const queryClient = useQueryClient();
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
+    <ScrollView
+      contentContainerStyle={{
+        flex: 0.5,
         alignItems: "center",
-        backgroundColor: "#F4F4F4",
       }}
+      refreshControl={
+        <RefreshControl
+          refreshing={false}
+          onRefresh={() => {
+            queryClient.refetchQueries(["tasks"]);
+          }}
+        />
+      }
     >
-      <MaterialCommunityIcons
-        name="shopping"
-        size={60}
-        color={Colors.grayColor}
-      />
-      <Text style={{ ...Fonts.grayColor17Medium, marginTop: Sizes.fixPadding }}>
-        {message || "Empty"}
-      </Text>
-    </View>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "#F4F4F4",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <MaterialCommunityIcons
+          name="shopping"
+          size={60}
+          color={Colors.grayColor}
+        />
+        <Text
+          style={{ ...Fonts.grayColor17Medium, marginTop: Sizes.fixPadding }}
+        >
+          {message || "Empty"}
+        </Text>
+      </View>
+    </ScrollView>
   );
 };
 
@@ -484,10 +503,6 @@ export const DialogMyTask = ({
   item,
 }) => {
   const queryClient = useQueryClient();
-  /* const [taskStarted, setTaskStarted] = useState(false);
-  if (item?.job_status_ === "inprogress") {
-    setTaskStarted(true);
-  } */
   return (
     <View>
       {acceptDialog()}
@@ -624,6 +639,7 @@ export const DialogMyTask = ({
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={() => {
+            queryClient.refetchQueries(["tasks"]);
             setShowStartDialog(false);
           }}
           style={styles.onHoldButtonStyle}
