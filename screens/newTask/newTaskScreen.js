@@ -23,7 +23,7 @@ import * as Yup from "yup";
 import * as Location from "expo-location";
 import Lottie from "lottie-react-native";
 import RNPickerSelect from "react-native-picker-select";
-import DateTimePicker from "./components/DateTimePickers";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { Button } from "react-native-paper";
 import { VStack, FormControl, HStack } from "native-base";
 import {
@@ -38,7 +38,7 @@ const validations = Yup.object().shape({
   startDate: Yup.string().required("Required"),
   endDate: Yup.string().required("Required"),
   team: Yup.string().required("Required"),
-  yourLocation: Yup.string().required("Required"),
+  job_address_: Yup.string().required("Required"),
 });
 
 const calcSlots = (calcDate, slotInterval, add1) => {
@@ -178,11 +178,16 @@ const CustomDTPicker = ({ value, onChange, updateDB, ...pickerProps }) => {
 const NewTask = ({ navigation }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [addressActual, setAddressActual] = useState(null);
+  const [location, setLocation] = useState(null);
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [isDatePickerVisible2, setDatePickerVisibility2] = useState(false);
+
   useEffect(() => {
     (async () => {
       await getAddress();
     })();
   }, [addressActual]);
+
   async function getAddress() {
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
@@ -193,8 +198,14 @@ const NewTask = ({ navigation }) => {
       accuracy: Location.Accuracy.Highest,
       maximumAge: 10000,
     });
+    setLocation(location);
     let address = await Location.reverseGeocodeAsync(location.coords);
-    let addressFormated = address[0].street + ", " + address[0].city;
+    let addressFormated =
+      address[0].street +
+      " " +
+      address[0].streetNumber +
+      ", " +
+      address[0].city;
     setAddressActual(addressFormated);
     setIsLoaded(true);
   }
@@ -209,7 +220,7 @@ const NewTask = ({ navigation }) => {
   const actualTime = moment().format("hh:mm A");
   const actualTimePlus15 = moment().add(15, "minutes").format("hh:mm A");
 
-  const [date, setDate] = useState(new Date());
+  /* const [date, setDate] = useState(new Date());
   const [mode, setMode] = useState("date");
   const [show, setShow] = useState(false);
   const [textDate, setTextDate] = useState(actualDate);
@@ -235,7 +246,7 @@ const NewTask = ({ navigation }) => {
     setShow(true);
     setMode(currentMode);
   };
-
+ */
   /*  const stateNewtask = useSelector((state) => state.newtaskSlice);
   slotsSB = calcSlots(moment(), 30, 0);
 
@@ -276,23 +287,40 @@ const NewTask = ({ navigation }) => {
     const newTask = {
       ...values,
       date: date,
+      job_latitude_: location.coords.latitude,
+      job_longitude_: location.coords.longitude,
+      job_pickup_latitude: location.coords.latitude,
+      job_pickup_longitude: location.coords.longitude,
+      job_address_: addressActual,
     };
     console.log(newTask);
     const response = await createTask(newTask);
     console.log(response);
   };
 
+  function getObjectDateFormated() {
+    let tempDate = new Date();
+    let fDate = {
+      day: tempDate.getDate(),
+      month: tempDate.getMonth() + 1,
+      year: tempDate.getFullYear(),
+      hour: tempDate.getHours(),
+      minute: tempDate.getMinutes(),
+    };
+    return fDate;
+  }
+
   function form() {
     return (
       <Formik
         initialValues={{
-          startDate: "",
-          endDate: "",
+          startDate: new Date(),
+          endDate: new Date(),
           customer: "",
           team: "",
           template: "",
           jobDescription: "",
-          yourLocation: "",
+          job_address_: "",
         }}
         onSubmit={(values) => handleSubmit(values)}
         validationSchema={validations}
@@ -340,7 +368,7 @@ const NewTask = ({ navigation }) => {
               <View style={styles.startAndEndDateWrapStyle}>
                 <TouchableOpacity
                   activeOpacity={0.9}
-                  onPress={() => showMode("date")}
+                  onPress={() => setDatePickerVisibility(true)}
                   style={{
                     paddingLeft: Sizes.fixPadding * 2.0,
                     ...styles.startAndEndDateStyle,
@@ -372,10 +400,45 @@ const NewTask = ({ navigation }) => {
                           marginLeft: 5,
                         }}
                       >
-                        {textDate}
+                        {values.startDate.getMonth() +
+                          1 +
+                          "/" +
+                          values.startDate.getDate() +
+                          "/" +
+                          values.startDate.getFullYear()}
                       </Text>
                     </View>
-                    {show && alert("show")}
+                    <DateTimePickerModal
+                      isVisible={isDatePickerVisible}
+                      mode="datetime"
+                      onConfirm={(value) => {
+                        setFieldValue("startDate", value);
+                        setDatePickerVisibility(false);
+                      }}
+                      onCancel={() => setDatePickerVisibility(false)}
+                      date={values.startDate}
+                    />
+                    <View
+                      style={{ flexDirection: "row", alignItems: "center" }}
+                    >
+                      <MaterialCommunityIcons
+                        name="clock"
+                        size={17}
+                        color={Colors.grayColor}
+                      />
+                      <Text
+                        style={{
+                          ...Fonts.blackColor14Regular,
+                          alignContent: "center",
+                          marginLeft: 5,
+                        }}
+                      >
+                        {/* STARTTIME */}
+                        {values.startDate.getHours() +
+                          ":" +
+                          values.startDate.getMinutes()}
+                      </Text>
+                    </View>
                   </View>
                   <MaterialIcons
                     name="keyboard-arrow-down"
@@ -392,7 +455,7 @@ const NewTask = ({ navigation }) => {
                 ></View>
                 <TouchableOpacity
                   activeOpacity={0.9}
-                  onPress={() => console.log("End Date")}
+                  onPress={() => setDatePickerVisibility2(true)}
                   style={{
                     paddingRight: Sizes.fixPadding * 2.0,
                     ...styles.startAndEndDateStyle,
@@ -425,9 +488,24 @@ const NewTask = ({ navigation }) => {
                         }}
                       >
                         {/* ENDDATE */}
+                        {values.endDate.getMonth() +
+                          1 +
+                          "/" +
+                          values.endDate.getDate() +
+                          "/" +
+                          values.endDate.getFullYear()}
                       </Text>
                     </View>
-
+                    <DateTimePickerModal
+                      isVisible={isDatePickerVisible2}
+                      mode="datetime"
+                      onConfirm={(value) => {
+                        setFieldValue("endDate", value);
+                        setDatePickerVisibility2(false);
+                      }}
+                      onCancel={() => setDatePickerVisibility2(false)}
+                      date={values.endDate}
+                    />
                     <View
                       style={{ flexDirection: "row", alignItems: "center" }}
                     >
@@ -444,6 +522,9 @@ const NewTask = ({ navigation }) => {
                         }}
                       >
                         {/* ENDTIME */}
+                        {values.endDate.getHours() +
+                          ":" +
+                          values.endDate.getMinutes()}
                       </Text>
                     </View>
                   </View>
@@ -724,13 +805,13 @@ const NewTask = ({ navigation }) => {
                     height: 80,
                     padding: 10,
                   }}
-                  placeholder={values.yourLocation}
+                  placeholder={values.job_address_}
                   multiline={true}
                   numberOfLines={4}
                   keyboardAppearance="dark"
                   returnKeyType="next"
                   returnKeyLabel="next"
-                  onChangeText={handleChange("yourLocation")}
+                  onChangeText={handleChange("job_address_")}
                   value={addressActual}
                 />
               </View>
