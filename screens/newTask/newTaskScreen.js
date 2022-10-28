@@ -9,33 +9,35 @@ import {
   Platform,
   Dimensions,
   TextInput,
+  ScrollView,
 } from "react-native";
 import { withNavigation } from "react-navigation";
 import { Colors, Fonts, Sizes } from "../../constant/styles";
 import { MaterialIcons } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
-import { updateNewTaskField } from "../../features/OrderFilters/newTaskSlice";
 import moment from "moment";
 
+import { useQuery } from "@tanstack/react-query";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import * as Location from "expo-location";
+import Lottie from "lottie-react-native";
 import RNPickerSelect from "react-native-picker-select";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import DateTimePicker from "./components/DateTimePickers";
 import { Button } from "react-native-paper";
-import DatePicker from "react-native-modern-datepicker";
+import { VStack, FormControl, HStack } from "native-base";
+import {
+  getCustomers,
+  getTeams,
+  getTemplates,
+} from "../../service/NewTaskService";
 
 const { width } = Dimensions.get("screen");
 
 const validations = Yup.object().shape({
   startDate: Yup.string().required("Required"),
   endDate: Yup.string().required("Required"),
-  customer: Yup.string().required("Required"),
   team: Yup.string().required("Required"),
-  template: Yup.string().required("Required"),
-  jobDescription: Yup.string().required("Required"),
   yourLocation: Yup.string().required("Required"),
 });
 
@@ -87,8 +89,153 @@ const calcSlots = (calcDate, slotInterval, add1) => {
 
   return [morningSlotx, afternoonSlotsx, eveningSlotsx];
 };
+//DateTimePicker
+/* const AndroidPicker = React.memo(({ show, ...props }) => {
+  if (!show) {
+    return null;
+  }
+  return <DateTimePicker style={{ width: 4, borderWidth: 1 }} {...props} />;
+});
+const CustomDTPicker = ({ value, onChange, updateDB, ...pickerProps }) => {
+  const [show, setShow] = useState(false);
+  const [mode, setMode] = useState("date");
+
+  const onChangeAndroid = (event, selectedDate) => {
+    const currentDate = new Date(selectedDate);
+    setShow(false);
+    onChange(currentDate.getTime());
+    //updateDB();
+  };
+
+  const showMode = (currentMode) => {
+    setMode(currentMode);
+    if (Platform.OS === "android") {
+      setShow(true);
+      // for iOS, add a button that closes the picker
+    }
+  };
+
+  const showDatepicker = () => {
+    showMode("date");
+  };
+
+  const showTimepicker = () => {
+    showMode("time");
+  };
+
+  return (
+    <VStack space={2} mb={2}>
+      <HStack
+        space={1}
+        borderWidth={1}
+        borderColor="gray.200"
+        borderRadius={4}
+        py={2}
+        pl={2}
+        pr={1}
+        alignItems="center"
+      >
+        <MaterialCommunityIcons name="calendar-blank" size={24} />
+        {Platform.OS === "ios" && (
+          <DateTimePicker
+            value={value}
+            onChange={(event, selectedDate) => {
+              const currentDate = new Date(selectedDate);
+              onChange(currentDate.getTime());
+            }}
+            {...pickerProps}
+            style={{ flex: 1 }}
+          />
+        )}
+        {Platform.OS === "android" && (
+          <HStack space={2} ml="auto" mr={1}>
+            <AndroidPicker
+              {...pickerProps}
+              mode={mode}
+              value={value}
+              onChange={onChangeAndroid}
+              show={show}
+            />
+            <TouchableOpacity onPress={showDatepicker}>
+              <Text borderRadius={6} bg="gray.100" px={3} py={1}>
+                {dayjs(value).format("D-MMM-YYYY")}
+              </Text>
+            </TouchableOpacity>
+            {pickerProps?.mode === "datetime" && (
+              <TouchableOpacity onPress={showTimepicker}>
+                <Text borderRadius={6} bg="gray.100" px={3} py={1}>
+                  {dayjs(value).format("h:mm A")}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </HStack>
+        )}
+      </HStack>
+    </VStack>
+  );
+}; */
 
 const NewTask = ({ navigation }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [addressActual, setAddressActual] = useState(null);
+  useEffect(() => {
+    (async () => {
+      await getAddress();
+    })();
+  }, [addressActual]);
+  async function getAddress() {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== "granted") {
+      setErrorMsg("Permission to access location was denied");
+      return;
+    }
+    let location = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Highest,
+      maximumAge: 10000,
+    });
+    let address = await Location.reverseGeocodeAsync(location.coords);
+    let addressFormated = address[0].street + ", " + address[0].city;
+    setAddressActual(addressFormated);
+    setIsLoaded(true);
+  }
+
+  //Getting customers, teams, templates
+  const customersQuery = useQuery(["customers"], () => getCustomers());
+  const teamsQuery = useQuery(["teams"], () => getTeams());
+  const templatesQuery = useQuery(["templates"], () => getTemplates());
+
+  //Datetime picker
+  const actualDate = moment().format("MM/DD/YYYY");
+  const actualTime = moment().format("hh:mm A");
+  const actualTimePlus15 = moment().add(15, "minutes").format("hh:mm A");
+
+  const [date, setDate] = useState(new Date());
+  const [mode, setMode] = useState("date");
+  const [show, setShow] = useState(false);
+  const [textDate, setTextDate] = useState(actualDate);
+
+  const onChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setShow(Platform.OS === "ios");
+    setDate(currentDate);
+
+    let temDate = new Date(currentDate);
+    let fDate =
+      tempDate.getDate() +
+      "/" +
+      (tempDate.getMonth() + 1) +
+      "/" +
+      tempDate.getFullYear();
+    let fTime = tempDate.getHours() + ":" + tempDate.getMinutes();
+    setTextDate(fDate);
+    console.log(fDate, fTime);
+  };
+
+  const showMode = (currentMode) => {
+    setShow(true);
+    setMode(currentMode);
+  };
+
   /*  const stateNewtask = useSelector((state) => state.newtaskSlice);
   slotsSB = calcSlots(moment(), 30, 0);
 
@@ -124,80 +271,18 @@ const NewTask = ({ navigation }) => {
       }
     }
   } */
-  //Datetime picker
-  const actualDate = moment().format("MM/DD/YYYY");
-  const actualTime = moment().format("hh:mm A");
-  const actualTimePlus15 = moment().add(15, "minutes").format("hh:mm A");
 
-  const [date, setDate] = useState(new Date());
-  const [mode, setMode] = useState("date");
-  const [show, setShow] = useState(false);
-  const [textDate, setTextDate] = useState(actualDate);
-
-  const onChange = (event, selectedDate) => {
-    const currentDate = selectedDate || date;
-    setShow(Platform.OS === "ios");
-    setDate(currentDate);
-
-    let temDate = new Date(currentDate);
-    let fDate =
-      tempDate.getDate() +
-      "/" +
-      (tempDate.getMonth() + 1) +
-      "/" +
-      tempDate.getFullYear();
-    let fTime = tempDate.getHours() + ":" + tempDate.getMinutes();
-    setTextDate(fDate);
-    console.log(fDate, fTime);
+  const handleSubmit = async (values) => {
+    const newTask = {
+      ...values,
+      date: date,
+    };
+    console.log(newTask);
+    const response = await createTask(newTask);
+    console.log(response);
   };
-
-  const showMode = (currentMode) => {
-    setShow(true);
-    setMode(currentMode);
-  };
-
-  const dispatch = useDispatch();
-
-  /* useEffect(() => {
-    dispatch(
-      updateNewTaskField({
-        key: "job_inicio_plan_date",
-        value: datexSB.format(),
-      })
-    );
-    dispatch(
-      updateNewTaskField({ key: "job_inicio_plan_time", value: fisrtsSlotSB })
-    );
-    dispatch(updateNewTaskField({ key: "slotsSB", value: slotsSB }));
-
-    dispatch(
-      updateNewTaskField({ key: "job_fin_plan_date", value: datexEB.format() })
-    );
-    dispatch(
-      updateNewTaskField({ key: "job_fin_plan_time", value: fisrtsSlotEB })
-    );
-    dispatch(updateNewTaskField({ key: "slotsEB", value: slotsEB }));
-  }, []); */
 
   function form() {
-    //OBTENER ADDRESS ACTUAL
-    /* let address = "";
-    const [addressActual, setAddressActual] = useState(address);
-    useEffect(() => {
-      (async () => {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          setErrorMsg("Permission to access location was denied");
-          return;
-        }
-
-        let location = await Location.getCurrentPositionAsync({});
-        setAddressActual(await Location.reverseGeocodeAsync(location.coords));
-        console.log("ADDRESS: ", address);
-        //setLocation(location);
-      })();
-    }, []); */
-
     return (
       <Formik
         initialValues={{
@@ -207,7 +292,7 @@ const NewTask = ({ navigation }) => {
           team: "",
           template: "",
           jobDescription: "",
-          yourLocation: "Av La Plata 123",
+          yourLocation: "",
         }}
         onSubmit={(values) => handleSubmit(values)}
         validationSchema={validations}
@@ -251,6 +336,7 @@ const NewTask = ({ navigation }) => {
                   Dates Selection
                 </Text>
               </View>
+              {/* INPUTS DATES */}
               <View style={styles.startAndEndDateWrapStyle}>
                 <TouchableOpacity
                   activeOpacity={0.9}
@@ -289,16 +375,7 @@ const NewTask = ({ navigation }) => {
                         {textDate}
                       </Text>
                     </View>
-                    {show && (
-                      <DateTimePicker
-                        testID="dateTimePicker"
-                        value={date}
-                        mode={mode}
-                        is24Hour={true}
-                        display="default"
-                        onChange={onChange}
-                      />
-                    )}
+                    {show && alert("show")}
                   </View>
                   <MaterialIcons
                     name="keyboard-arrow-down"
@@ -429,10 +506,12 @@ const NewTask = ({ navigation }) => {
                     label: "Select Customer...",
                     value: null,
                   }}
-                  items={[
-                    { label: "Customer 1", value: 0 },
-                    { label: "Customer 2", value: 1 },
-                  ]}
+                  items={customersQuery.data.map(
+                    ({ customer_username_, _id }) => ({
+                      label: customer_username_,
+                      value: _id,
+                    })
+                  )}
                 />
               </View>
             </View>
@@ -489,10 +568,10 @@ const NewTask = ({ navigation }) => {
                       label: "Select Team...",
                       value: null,
                     }}
-                    items={[
-                      { label: "Team 1", value: 0 },
-                      { label: "Team 2", value: 1 },
-                    ]}
+                    items={teamsQuery.data.map(({ team_name_, _id }) => ({
+                      label: team_name_,
+                      value: _id,
+                    }))}
                   />
                 </View>
               </View>
@@ -548,10 +627,12 @@ const NewTask = ({ navigation }) => {
                       label: "Select Template...",
                       value: null,
                     }}
-                    items={[
-                      { label: "template 1", value: 0 },
-                      { label: "template 2", value: 1 },
-                    ]}
+                    items={templatesQuery.data.map(
+                      ({ template_name, _id }) => ({
+                        label: template_name,
+                        value: _id,
+                      })
+                    )}
                   />
                 </View>
               </View>
@@ -650,7 +731,7 @@ const NewTask = ({ navigation }) => {
                   returnKeyType="next"
                   returnKeyLabel="next"
                   onChangeText={handleChange("yourLocation")}
-                  value={values.yourLocation}
+                  value={addressActual}
                 />
               </View>
             </View>
@@ -678,12 +759,28 @@ const NewTask = ({ navigation }) => {
     );
   }
 
+  function LoadingScreen() {
+    return (
+      <View style={{ flex: 1 }}>
+        <Lottie
+          source={require("../../assets/animations/100485-circle-waves-white-dots.json")}
+          autoPlay
+          loop
+        />
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <StatusBar />
-      <View style={{ flex: 1, backgroundColor: Colors.blackColor }}>
-        {form()}
-      </View>
+      {!isLoaded ? (
+        LoadingScreen()
+      ) : (
+        <ScrollView style={{ flex: 1, backgroundColor: Colors.blackColor }}>
+          {form()}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 };

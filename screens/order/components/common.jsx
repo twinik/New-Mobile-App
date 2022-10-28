@@ -29,7 +29,7 @@ export const RenderTaskItem = ({ item, toggleDialog }) => {
     created: "Accept",
     assigned: "Start",
     inprogress: "Edit",
-    completed: "View",
+    successful: "View",
     failed: "View",
   };
 
@@ -503,6 +503,7 @@ export const DialogMyTask = ({
   item,
 }) => {
   const queryClient = useQueryClient();
+
   return (
     <View>
       {acceptDialog()}
@@ -650,7 +651,7 @@ export const DialogMyTask = ({
           activeOpacity={0.9}
           onPress={() => {
             const update = {
-              job_status_: "completed",
+              job_status_: "successful",
             };
             updateTask(item._id, update);
             queryClient.refetchQueries(["tasks"]);

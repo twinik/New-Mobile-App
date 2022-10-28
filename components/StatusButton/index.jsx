@@ -18,7 +18,7 @@ const STATUS_LIST = {
     title: "Assigned",
   },
   inprogress: { path: "task_progress.png", title: "In Progress" },
-  completed: { path: "task_completed.png", title: "Completed" },
+  successful: { path: "task_completed.png", title: "Successful" },
   failed: { path: "task_pending.png", title: "Failed" },
 };
 
@@ -30,7 +30,7 @@ const getImgSrc = (status) => {
       return require(`../../assets/images/markers/task_assigned.png`);
     case "inprogress":
       return require(`../../assets/images/markers/task_progress.png`);
-    case "completed":
+    case "successful":
       return require(`../../assets/images/markers/task_completed.png`);
     case "created":
       return require(`../../assets/images/markers/task_assigned.png`);

@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, FlatList, Dimensions, RefreshControl } from "react-native";
 import { Colors, Sizes, Fonts } from "../../../constant/styles";
 import { EmptySkeleton, RenderTaskItem, DialogMyTask } from "./common";
 import { useQueryClient } from "@tanstack/react-query";
+import { array } from "yup";
 
 const { width, height } = Dimensions.get("screen");
 
@@ -47,6 +48,14 @@ const MyTasks = ({ data }) => {
   const [showStartDialog, setShowStartDialog] = useState(false);
   const [showFailedDialog, setShowFailedDialog] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+
+  useEffect(() => {
+    if (selectedTask) {
+      let id = selectedTask._id;
+      let task = data.find((item) => item._id === id);
+      setSelectedTask(task);
+    }
+  }, [data]);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#F4F4F4" }}>

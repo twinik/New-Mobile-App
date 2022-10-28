@@ -1,9 +1,13 @@
 import axios from "axios";
-const API = "https://react-ondemand-backend-hu0tq0d2u-gfalotico.vercel.app/Task";
+const API = "http://10.0.2.2:3000/Task";
+import { auth } from "../config/firebase";
 
 export const getTasks = async () => {
+  const token = await auth.currentUser.getIdToken();
   try {
-    const response = await axios.get(`${API}`);
+    const response = await axios.get(`${API}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     return response.data;
   } catch (error) {
     console.error(error);
@@ -17,5 +21,4 @@ export const updateTask = async (id, task) => {
   } catch (error) {
     console.error(error.response.data);
   }
-  
-}
+};

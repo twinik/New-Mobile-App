@@ -17,13 +17,13 @@ const firebaseConfig1 = {
 };
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCD6YzqrTIF_LILuhWeCyA4iCrluoGPtL0",
-  authDomain: "testing-dev-proj.firebaseapp.com",
-  databaseURL: "https://testing-dev-proj-default-rtdb.firebaseio.com",
-  projectId: "testing-dev-proj",
-  storageBucket: "testing-dev-proj.appspot.com",
-  messagingSenderId: "72113637640",
-  appId: "1:72113637640:web:86d3c07632d223bcf6c4bd",
+  apiKey: "AIzaSyBaebzRLSgqtnsTaIJm9sIJuyzvVb0CTUI",
+  authDomain: "taskondemand-57aae.firebaseapp.com",
+  databaseURL: "https://taskondemand-57aae-default-rtdb.firebaseio.com",
+  projectId: "taskondemand-57aae",
+  storageBucket: "taskondemand-57aae.appspot.com",
+  messagingSenderId: "654031251764",
+  appId: "1:654031251764:web:b9a86ecdea678f1190dd61",
 };
 // initialize firebase
 

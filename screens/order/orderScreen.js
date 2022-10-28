@@ -8,6 +8,7 @@ import {
   Text,
   Dimensions,
   TouchableOpacity,
+  ToastAndroid,
 } from "react-native";
 import { withNavigation } from "react-navigation";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -81,6 +82,8 @@ const Orders = ({ navigation }) => {
 
   useEffect(() => {
     filterTasks();
+    StatusBar.setBarStyle("dark-content", true);
+    StatusBar.setBackgroundColor("#fff");
   }, [data]);
 
   const filterTasks = () => {
@@ -92,7 +95,7 @@ const Orders = ({ navigation }) => {
     );
     setAssignedTasks(assignedTasks);
     const completedTasks = data?.filter(
-      (task) => task.job_status_ == "failed" || task.job_status_ == "completed"
+      (task) => task.job_status_ == "failed" || task.job_status_ == "successful"
     );
     setCompletedTasks(completedTasks);
   };
@@ -128,17 +131,9 @@ const Orders = ({ navigation }) => {
     );
   }
 
-  /* if (isFetching) {
-    return (
-      <View style={{ flex: 1 }}>
-        <Lottie
-          source={require("../../assets/animations/100485-circle-waves-white-dots.json")}
-          autoPlay
-          loop
-        />
-      </View>
-    );
-  } */
+  if (isFetching) {
+    ToastAndroid.show("Loading...", ToastAndroid.SHORT);
+  }
 
   return (
     <View style={{ flex: 1 }}>
