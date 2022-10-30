@@ -26,7 +26,9 @@ import RNPickerSelect from "react-native-picker-select";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { Button } from "react-native-paper";
 import { VStack, FormControl, HStack } from "native-base";
+import { useQueryClient } from "@tanstack/react-query";
 import {
+  createTask,
   getCustomers,
   getTeams,
   getTemplates,
@@ -35,152 +37,23 @@ import {
 const { width } = Dimensions.get("screen");
 
 const validations = Yup.object().shape({
-  startDate: Yup.string().required("Required"),
-  endDate: Yup.string().required("Required"),
-  team: Yup.string().required("Required"),
+  datetime_start_before_: Yup.string().required("Required"),
+  datetime_end_before_: Yup.string().required("Required"),
+  team_id_: Yup.string().required("Required"),
   job_address_: Yup.string().required("Required"),
 });
 
-const calcSlots = (calcDate, slotInterval, add1) => {
-  //console.log(calcDate)
-  let x = {
-    slotInterval: slotInterval,
-    closeTime: "24:00",
-  };
-
-  //Format the time
-  let startTime = moment(calcDate, "HH:mm A");
-  startTime = moment(startTime).add(5 + add1, "minutes");
-
-  let remainder = slotInterval - (startTime.minute() % slotInterval);
-  //console.log('hhhhh', remainder);
-  startTime = moment(startTime).add(remainder, "minutes");
-
-  //Format the end time and the next day to it
-  let endTime = moment(x.closeTime, "h:mm A");
-  //console.log('startime', startTime, endTime )
-
-  //console.log(startTime)
-
-  //Times
-  let morningSlotx = [];
-  let afternoonSlotsx = [];
-  let eveningSlotsx = [];
-
-  //Loop over the times - only pushes time with 30 minutes interval
-  while (startTime < endTime) {
-    //Push times
-    if (startTime <= moment("12:00", "h:mm A")) {
-      morningSlotx.push(startTime.format("h:mm A"));
-    }
-    if (
-      startTime > moment("12:00", "h:mm A") &&
-      startTime <= moment("18:00", "h:mm A")
-    ) {
-      afternoonSlotsx.push(startTime.format("h:mm A"));
-    }
-    if (startTime > moment("18:00", "h:mm A")) {
-      eveningSlotsx.push(startTime.format("h:mm A"));
-    }
-    startTime.add(x.slotInterval, "minutes");
-  }
-
-  // Redux de slots
-
-  return [morningSlotx, afternoonSlotsx, eveningSlotsx];
-};
-//DateTimePicker
-/* const AndroidPicker = React.memo(({ show, ...props }) => {
-  if (!show) {
-    return null;
-  }
-  return <DateTimePicker style={{ width: 4, borderWidth: 1 }} {...props} />;
-});
-const CustomDTPicker = ({ value, onChange, updateDB, ...pickerProps }) => {
-  const [show, setShow] = useState(false);
-  const [mode, setMode] = useState("date");
-
-  const onChangeAndroid = (event, selectedDate) => {
-    const currentDate = new Date(selectedDate);
-    setShow(false);
-    onChange(currentDate.getTime());
-    //updateDB();
-  };
-
-  const showMode = (currentMode) => {
-    setMode(currentMode);
-    if (Platform.OS === "android") {
-      setShow(true);
-      // for iOS, add a button that closes the picker
-    }
-  };
-
-  const showDatepicker = () => {
-    showMode("date");
-  };
-
-  const showTimepicker = () => {
-    showMode("time");
-  };
-
-  return (
-    <VStack space={2} mb={2}>
-      <HStack
-        space={1}
-        borderWidth={1}
-        borderColor="gray.200"
-        borderRadius={4}
-        py={2}
-        pl={2}
-        pr={1}
-        alignItems="center"
-      >
-        <MaterialCommunityIcons name="calendar-blank" size={24} />
-        {Platform.OS === "ios" && (
-          <DateTimePicker
-            value={value}
-            onChange={(event, selectedDate) => {
-              const currentDate = new Date(selectedDate);
-              onChange(currentDate.getTime());
-            }}
-            {...pickerProps}
-            style={{ flex: 1 }}
-          />
-        )}
-        {Platform.OS === "android" && (
-          <HStack space={2} ml="auto" mr={1}>
-            <AndroidPicker
-              {...pickerProps}
-              mode={mode}
-              value={value}
-              onChange={onChangeAndroid}
-              show={show}
-            />
-            <TouchableOpacity onPress={showDatepicker}>
-              <Text borderRadius={6} bg="gray.100" px={3} py={1}>
-                {dayjs(value).format("D-MMM-YYYY")}
-              </Text>
-            </TouchableOpacity>
-            {pickerProps?.mode === "datetime" && (
-              <TouchableOpacity onPress={showTimepicker}>
-                <Text borderRadius={6} bg="gray.100" px={3} py={1}>
-                  {dayjs(value).format("h:mm A")}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </HStack>
-        )}
-      </HStack>
-    </VStack>
-  );
-}; */
+function addZeroBefore(n) {
+  return (n < 10 ? "0" : "") + n;
+}
 
 const NewTask = ({ navigation }) => {
-  const [isLoaded, setIsLoaded] = useState(false);
   const [addressActual, setAddressActual] = useState(null);
   const [location, setLocation] = useState(null);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [isDatePickerVisible2, setDatePickerVisibility2] = useState(false);
+
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     (async () => {
@@ -207,122 +80,47 @@ const NewTask = ({ navigation }) => {
       ", " +
       address[0].city;
     setAddressActual(addressFormated);
-    setIsLoaded(true);
   }
 
   //Getting customers, teams, templates
-  const customersQuery = useQuery(["customers"], () => getCustomers());
-  const teamsQuery = useQuery(["teams"], () => getTeams());
-  const templatesQuery = useQuery(["templates"], () => getTemplates());
+  const customersQuery = navigation.getParam("customersQuery");
+  const teamsQuery = navigation.getParam("teamsQuery");
+  const templatesQuery = navigation.getParam("templatesQuery");
 
-  //Datetime picker
-  const actualDate = moment().format("MM/DD/YYYY");
-  const actualTime = moment().format("hh:mm A");
-  const actualTimePlus15 = moment().add(15, "minutes").format("hh:mm A");
-
-  /* const [date, setDate] = useState(new Date());
-  const [mode, setMode] = useState("date");
-  const [show, setShow] = useState(false);
-  const [textDate, setTextDate] = useState(actualDate);
-
-  const onChange = (event, selectedDate) => {
-    const currentDate = selectedDate || date;
-    setShow(Platform.OS === "ios");
-    setDate(currentDate);
-
-    let temDate = new Date(currentDate);
-    let fDate =
-      tempDate.getDate() +
-      "/" +
-      (tempDate.getMonth() + 1) +
-      "/" +
-      tempDate.getFullYear();
-    let fTime = tempDate.getHours() + ":" + tempDate.getMinutes();
-    setTextDate(fDate);
-    console.log(fDate, fTime);
-  };
-
-  const showMode = (currentMode) => {
-    setShow(true);
-    setMode(currentMode);
-  };
- */
-  /*  const stateNewtask = useSelector((state) => state.newtaskSlice);
-  slotsSB = calcSlots(moment(), 30, 0);
-
-  // Capturando fecha actual
-  let today = moment();
-  let datexSB = today;
-  let datexEB = datexSB;
-
-  // Capturando el primer slot disponible para el dia Start Date
-  let fisrtsSlotSB = "";
-  if (slotsSB[0].length > 0) {
-    fisrtsSlotSB = slotsSB[0][0];
-  } else {
-    if (slotsSB[1].length > 0) {
-      fisrtsSlotSB = slotsSB[1][0];
-    } else {
-      if (slotsSB[2].length > 0) {
-        fisrtsSlotSB = slotsSB[2][0];
-      }
-    }
-  }
-
-  slotsEB = calcSlots(today, 40, 5);
-  let fisrtsSlotEB = "";
-  if (slotsEB[0].length > 0) {
-    fisrtsSlotEB = slotsEB[0][0];
-  } else {
-    if (slotsEB[1].length > 0) {
-      fisrtsSlotEB = slotsEB[1][0];
-    } else {
-      if (slotsEB[2].length > 0) {
-        fisrtsSlotEB = slotsEB[2][0];
-      }
-    }
-  } */
-
-  const handleSubmit = async (values) => {
+  const create = async (values) => {
     const newTask = {
       ...values,
-      date: date,
       job_latitude_: location.coords.latitude,
       job_longitude_: location.coords.longitude,
       job_pickup_latitude: location.coords.latitude,
       job_pickup_longitude: location.coords.longitude,
       job_address_: addressActual,
     };
-    console.log(newTask);
     const response = await createTask(newTask);
     console.log(response);
+    console.log(newTask);
+    queryClient.refetchQueries(["tasks"]);
+    navigation.goBack();
   };
 
-  function getObjectDateFormated() {
-    let tempDate = new Date();
-    let fDate = {
-      day: tempDate.getDate(),
-      month: tempDate.getMonth() + 1,
-      year: tempDate.getFullYear(),
-      hour: tempDate.getHours(),
-      minute: tempDate.getMinutes(),
-    };
-    return fDate;
-  }
-
   function form() {
+    let start = new Date();
+    let end = new Date();
+    end.setHours(end.getHours());
+    end.setMinutes(end.getMinutes() + 15);
+
     return (
       <Formik
         initialValues={{
-          startDate: new Date(),
-          endDate: new Date(),
-          customer: "",
-          team: "",
-          template: "",
-          jobDescription: "",
-          job_address_: "",
+          datetime_start_before_: start,
+          datetime_end_before_: end,
+          customer_id_: "",
+          team_id_: "",
+          template_id_: null,
+          job_description_: "",
+          job_address_: addressActual === null ? "Loading..." : addressActual,
         }}
-        onSubmit={(values) => handleSubmit(values)}
+        onSubmit={(values) => create(values)}
         validationSchema={validations}
       >
         {({
@@ -334,277 +132,15 @@ const NewTask = ({ navigation }) => {
           errors,
           touched,
         }) => (
-          <View>
-            <View
-              style={{
-                backgroundColor: Colors.blackColor,
-                width: width,
-              }}
-            >
-              {/* 1-Date selection */}
+          <View style={{ flex: 1, backgroundColor: Colors.blackColor }}>
+            <ScrollView>
               <View
                 style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginLeft: 10,
-                }}
-              >
-                <MaterialCommunityIcons
-                  name="numeric-1-circle-outline"
-                  size={22}
-                  color={Colors.whiteColor}
-                />
-                <Text
-                  style={{
-                    ...Fonts.whiteColor17Regular,
-                    marginVertical: Sizes.fixPadding,
-                    marginLeft: 10,
-                  }}
-                >
-                  Dates Selection
-                </Text>
-              </View>
-              {/* INPUTS DATES */}
-              <View style={styles.startAndEndDateWrapStyle}>
-                <TouchableOpacity
-                  activeOpacity={0.9}
-                  onPress={() => setDatePickerVisibility(true)}
-                  style={{
-                    paddingLeft: Sizes.fixPadding * 2.0,
-                    ...styles.startAndEndDateStyle,
-                    alignItems: "center",
-                    alignContent: "center",
-                  }}
-                >
-                  <View>
-                    <Text
-                      style={{
-                        ...Fonts.blackColor15Bold,
-                        paddingBottom: Sizes.fixPadding - 5.0,
-                      }}
-                    >
-                      START DATE
-                    </Text>
-                    <View
-                      style={{ flexDirection: "row", alignItems: "center" }}
-                    >
-                      <MaterialCommunityIcons
-                        name="calendar"
-                        size={17}
-                        color={Colors.grayColor}
-                      />
-                      <Text
-                        style={{
-                          ...Fonts.blackColor14Regular,
-                          alignContent: "center",
-                          marginLeft: 5,
-                        }}
-                      >
-                        {values.startDate.getMonth() +
-                          1 +
-                          "/" +
-                          values.startDate.getDate() +
-                          "/" +
-                          values.startDate.getFullYear()}
-                      </Text>
-                    </View>
-                    <DateTimePickerModal
-                      isVisible={isDatePickerVisible}
-                      mode="datetime"
-                      onConfirm={(value) => {
-                        setFieldValue("startDate", value);
-                        setDatePickerVisibility(false);
-                      }}
-                      onCancel={() => setDatePickerVisibility(false)}
-                      date={values.startDate}
-                    />
-                    <View
-                      style={{ flexDirection: "row", alignItems: "center" }}
-                    >
-                      <MaterialCommunityIcons
-                        name="clock"
-                        size={17}
-                        color={Colors.grayColor}
-                      />
-                      <Text
-                        style={{
-                          ...Fonts.blackColor14Regular,
-                          alignContent: "center",
-                          marginLeft: 5,
-                        }}
-                      >
-                        {/* STARTTIME */}
-                        {values.startDate.getHours() +
-                          ":" +
-                          values.startDate.getMinutes()}
-                      </Text>
-                    </View>
-                  </View>
-                  <MaterialIcons
-                    name="keyboard-arrow-down"
-                    size={22}
-                    color={Colors.grayColor}
-                  />
-                </TouchableOpacity>
-                <View
-                  style={{
-                    backgroundColor: Colors.blackColor,
-                    width: 1.0,
-                    height: 90.0,
-                  }}
-                ></View>
-                <TouchableOpacity
-                  activeOpacity={0.9}
-                  onPress={() => setDatePickerVisibility2(true)}
-                  style={{
-                    paddingRight: Sizes.fixPadding * 2.0,
-                    ...styles.startAndEndDateStyle,
-                    alignItems: "center",
-                    alignContent: "center",
-                  }}
-                >
-                  <View>
-                    <Text
-                      style={{
-                        ...Fonts.blackColor15Bold,
-                        paddingBottom: Sizes.fixPadding - 5.0,
-                      }}
-                    >
-                      END DATE
-                    </Text>
-                    <View
-                      style={{ flexDirection: "row", alignItems: "center" }}
-                    >
-                      <MaterialCommunityIcons
-                        name="calendar"
-                        size={17}
-                        color={Colors.grayColor}
-                      />
-                      <Text
-                        style={{
-                          ...Fonts.blackColor14Regular,
-                          alignContent: "center",
-                          marginLeft: 5,
-                        }}
-                      >
-                        {/* ENDDATE */}
-                        {values.endDate.getMonth() +
-                          1 +
-                          "/" +
-                          values.endDate.getDate() +
-                          "/" +
-                          values.endDate.getFullYear()}
-                      </Text>
-                    </View>
-                    <DateTimePickerModal
-                      isVisible={isDatePickerVisible2}
-                      mode="datetime"
-                      onConfirm={(value) => {
-                        setFieldValue("endDate", value);
-                        setDatePickerVisibility2(false);
-                      }}
-                      onCancel={() => setDatePickerVisibility2(false)}
-                      date={values.endDate}
-                    />
-                    <View
-                      style={{ flexDirection: "row", alignItems: "center" }}
-                    >
-                      <MaterialCommunityIcons
-                        name="clock"
-                        size={17}
-                        color={Colors.grayColor}
-                      />
-                      <Text
-                        style={{
-                          ...Fonts.blackColor14Regular,
-                          alignContent: "center",
-                          marginLeft: 5,
-                        }}
-                      >
-                        {/* ENDTIME */}
-                        {values.endDate.getHours() +
-                          ":" +
-                          values.endDate.getMinutes()}
-                      </Text>
-                    </View>
-                  </View>
-                  <MaterialIcons
-                    name="keyboard-arrow-down"
-                    size={22}
-                    color={Colors.grayColor}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-            {/* 2-Customer selection */}
-            <View
-              style={{
-                backgroundColor: Colors.blackColor,
-                width: width,
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginLeft: 10,
-                }}
-              >
-                <MaterialCommunityIcons
-                  name="numeric-2-circle-outline"
-                  size={22}
-                  color={Colors.whiteColor}
-                />
-                <Text
-                  style={{
-                    ...Fonts.whiteColor17Regular,
-                    marginVertical: Sizes.fixPadding,
-                    marginLeft: 10,
-                  }}
-                >
-                  Select Customer
-                </Text>
-              </View>
-              <View style={styles.containerSection}>
-                <RNPickerSelect
-                  onValueChange={(value) => setFieldValue("customer", value)}
-                  value={values.customer}
-                  useNativeAndroidPickerStyle={false}
-                  fixAndroidTouchableBug={true}
-                  doneText="Accept"
-                  Icon={() => {
-                    return (
-                      <MaterialIcons
-                        name="keyboard-arrow-down"
-                        size={22}
-                        color={Colors.grayColor}
-                        style={{ marginRight: 10, marginTop: 12 }}
-                      />
-                    );
-                  }}
-                  style={PickerStyles}
-                  placeholder={{
-                    label: "Select Customer...",
-                    value: null,
-                  }}
-                  items={customersQuery.data.map(
-                    ({ customer_username_, _id }) => ({
-                      label: customer_username_,
-                      value: _id,
-                    })
-                  )}
-                />
-              </View>
-            </View>
-
-            <View style={{ flexDirection: "row" }}>
-              {/* 3-Select Team */}
-              <View
-                style={{
-                  flex: 1,
+                  backgroundColor: Colors.blackColor,
                   width: width,
                 }}
               >
+                {/* 1-Date selection */}
                 <View
                   style={{
                     flexDirection: "row",
@@ -613,7 +149,7 @@ const NewTask = ({ navigation }) => {
                   }}
                 >
                   <MaterialCommunityIcons
-                    name="numeric-3-circle-outline"
+                    name="numeric-1-circle-outline"
                     size={22}
                     color={Colors.whiteColor}
                   />
@@ -624,42 +160,184 @@ const NewTask = ({ navigation }) => {
                       marginLeft: 10,
                     }}
                   >
-                    Select Team
+                    Dates Selection
                   </Text>
                 </View>
-                <View style={styles.containerSection}>
-                  <RNPickerSelect
-                    onValueChange={(value) => setFieldValue("team", value)}
-                    value={values.team}
-                    useNativeAndroidPickerStyle={false}
-                    fixAndroidTouchableBug={true}
-                    doneText="Accept"
-                    Icon={() => {
-                      return (
-                        <MaterialIcons
-                          name="keyboard-arrow-down"
-                          size={22}
+                {/* INPUTS DATES */}
+                <View style={styles.startAndEndDateWrapStyle}>
+                  <TouchableOpacity
+                    activeOpacity={0.9}
+                    onPress={() => setDatePickerVisibility(true)}
+                    style={{
+                      paddingLeft: Sizes.fixPadding * 2.0,
+                      ...styles.startAndEndDateStyle,
+                      alignItems: "center",
+                      alignContent: "center",
+                    }}
+                  >
+                    <View>
+                      <Text
+                        style={{
+                          ...Fonts.blackColor15Bold,
+                          paddingBottom: Sizes.fixPadding - 5.0,
+                        }}
+                      >
+                        START DATE
+                      </Text>
+                      <View
+                        style={{ flexDirection: "row", alignItems: "center" }}
+                      >
+                        <MaterialCommunityIcons
+                          name="calendar"
+                          size={17}
                           color={Colors.grayColor}
-                          style={{ marginRight: 10, marginTop: 12 }}
                         />
-                      );
+                        <Text
+                          style={{
+                            ...Fonts.blackColor14Regular,
+                            alignContent: "center",
+                            marginLeft: 5,
+                          }}
+                        >
+                          {values.datetime_start_before_.toLocaleDateString()}
+                        </Text>
+                      </View>
+                      <DateTimePickerModal
+                        isVisible={isDatePickerVisible}
+                        mode="datetime"
+                        onConfirm={(value) => {
+                          setDatePickerVisibility(false);
+                          setFieldValue("datetime_start_before_", value);
+                        }}
+                        onCancel={() => setDatePickerVisibility(false)}
+                        date={values.datetime_start_before_}
+                        minimumDate={start}
+                      />
+                      <View
+                        style={{ flexDirection: "row", alignItems: "center" }}
+                      >
+                        <MaterialCommunityIcons
+                          name="clock"
+                          size={17}
+                          color={Colors.grayColor}
+                        />
+                        <Text
+                          style={{
+                            ...Fonts.blackColor14Regular,
+                            alignContent: "center",
+                            marginLeft: 5,
+                          }}
+                        >
+                          {/* STARTTIME */}
+                          {addZeroBefore(
+                            values.datetime_start_before_.getHours()
+                          ) +
+                            ":" +
+                            addZeroBefore(
+                              values.datetime_start_before_.getMinutes()
+                            )}
+                        </Text>
+                      </View>
+                    </View>
+                    <MaterialIcons
+                      name="keyboard-arrow-down"
+                      size={22}
+                      color={Colors.grayColor}
+                    />
+                  </TouchableOpacity>
+                  <View
+                    style={{
+                      backgroundColor: Colors.blackColor,
+                      width: 1.0,
+                      height: 90.0,
                     }}
-                    style={PickerStyles}
-                    placeholder={{
-                      label: "Select Team...",
-                      value: null,
+                  ></View>
+                  <TouchableOpacity
+                    activeOpacity={0.9}
+                    onPress={() => setDatePickerVisibility2(true)}
+                    style={{
+                      paddingRight: Sizes.fixPadding * 2.0,
+                      ...styles.startAndEndDateStyle,
+                      alignItems: "center",
+                      alignContent: "center",
                     }}
-                    items={teamsQuery.data.map(({ team_name_, _id }) => ({
-                      label: team_name_,
-                      value: _id,
-                    }))}
-                  />
+                  >
+                    <View>
+                      <Text
+                        style={{
+                          ...Fonts.blackColor15Bold,
+                          paddingBottom: Sizes.fixPadding - 5.0,
+                        }}
+                      >
+                        END DATE
+                      </Text>
+                      <View
+                        style={{ flexDirection: "row", alignItems: "center" }}
+                      >
+                        <MaterialCommunityIcons
+                          name="calendar"
+                          size={17}
+                          color={Colors.grayColor}
+                        />
+                        <Text
+                          style={{
+                            ...Fonts.blackColor14Regular,
+                            alignContent: "center",
+                            marginLeft: 5,
+                          }}
+                        >
+                          {/* ENDDATE */}
+                          {values.datetime_end_before_.toLocaleDateString()}
+                        </Text>
+                      </View>
+                      <DateTimePickerModal
+                        isVisible={isDatePickerVisible2}
+                        mode="datetime"
+                        onConfirm={(value) => {
+                          setDatePickerVisibility2(false);
+                          setFieldValue("datetime_end_before_", value);
+                        }}
+                        onCancel={() => setDatePickerVisibility2(false)}
+                        date={values.datetime_end_before_}
+                        minimumDate={values.datetime_start_before_}
+                      />
+                      <View
+                        style={{ flexDirection: "row", alignItems: "center" }}
+                      >
+                        <MaterialCommunityIcons
+                          name="clock"
+                          size={17}
+                          color={Colors.grayColor}
+                        />
+                        <Text
+                          style={{
+                            ...Fonts.blackColor14Regular,
+                            alignContent: "center",
+                            marginLeft: 5,
+                          }}
+                        >
+                          {/* ENDTIME */}
+                          {addZeroBefore(
+                            values.datetime_end_before_.getHours()
+                          ) +
+                            ":" +
+                            addZeroBefore(
+                              values.datetime_end_before_.getMinutes()
+                            )}
+                        </Text>
+                      </View>
+                    </View>
+                    <MaterialIcons
+                      name="keyboard-arrow-down"
+                      size={22}
+                      color={Colors.grayColor}
+                    />
+                  </TouchableOpacity>
                 </View>
               </View>
-              {/* 4-Select Template */}
+              {/* 2-Customer selection */}
               <View
                 style={{
-                  flex: 1,
                   backgroundColor: Colors.blackColor,
                   width: width,
                 }}
@@ -672,7 +350,7 @@ const NewTask = ({ navigation }) => {
                   }}
                 >
                   <MaterialCommunityIcons
-                    name="numeric-4-circle-outline"
+                    name="numeric-2-circle-outline"
                     size={22}
                     color={Colors.whiteColor}
                   />
@@ -683,13 +361,15 @@ const NewTask = ({ navigation }) => {
                       marginLeft: 10,
                     }}
                   >
-                    Select Template
+                    Select Customer
                   </Text>
                 </View>
                 <View style={styles.containerSection}>
                   <RNPickerSelect
-                    onValueChange={(value) => setFieldValue("template", value)}
-                    value={values.template}
+                    onValueChange={(value) =>
+                      setFieldValue("customer_id_", value)
+                    }
+                    value={values.customer_id_}
                     useNativeAndroidPickerStyle={false}
                     fixAndroidTouchableBug={true}
                     doneText="Accept"
@@ -705,135 +385,261 @@ const NewTask = ({ navigation }) => {
                     }}
                     style={PickerStyles}
                     placeholder={{
-                      label: "Select Template...",
+                      label: "Select Customer...",
                       value: null,
                     }}
-                    items={templatesQuery.data.map(
-                      ({ template_name, _id }) => ({
-                        label: template_name,
+                    items={customersQuery.data.map(
+                      ({ customer_username_, _id }) => ({
+                        label: customer_username_,
                         value: _id,
                       })
                     )}
                   />
                 </View>
               </View>
-            </View>
-            {/* 5-Select JobDescription */}
-            <View
-              style={{
-                backgroundColor: Colors.blackColor,
-                width: width,
-              }}
-            >
+              {/* 2 & 3 */}
+              <View style={{ flexDirection: "row" }}>
+                {/* 3-Select Team */}
+                <View
+                  style={{
+                    flex: 1,
+                    width: width,
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginLeft: 10,
+                    }}
+                  >
+                    <MaterialCommunityIcons
+                      name="numeric-3-circle-outline"
+                      size={22}
+                      color={Colors.whiteColor}
+                    />
+                    <Text
+                      style={{
+                        ...Fonts.whiteColor17Regular,
+                        marginVertical: Sizes.fixPadding,
+                        marginLeft: 10,
+                      }}
+                    >
+                      Select Team
+                    </Text>
+                  </View>
+                  <View style={styles.containerSection}>
+                    <RNPickerSelect
+                      onValueChange={(value) =>
+                        setFieldValue("team_id_", value)
+                      }
+                      value={values.team_id_}
+                      useNativeAndroidPickerStyle={false}
+                      fixAndroidTouchableBug={true}
+                      doneText="Accept"
+                      Icon={() => {
+                        return (
+                          <MaterialIcons
+                            name="keyboard-arrow-down"
+                            size={22}
+                            color={Colors.grayColor}
+                            style={{ marginRight: 10, marginTop: 12 }}
+                          />
+                        );
+                      }}
+                      style={PickerStyles}
+                      placeholder={{
+                        label: "Select Team...",
+                        value: null,
+                      }}
+                      items={teamsQuery.data.map(({ team_name_, _id }) => ({
+                        label: team_name_,
+                        value: _id,
+                      }))}
+                    />
+                  </View>
+                </View>
+                {/* 4-Select Template */}
+                <View
+                  style={{
+                    flex: 1,
+                    backgroundColor: Colors.blackColor,
+                    width: width,
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginLeft: 10,
+                    }}
+                  >
+                    <MaterialCommunityIcons
+                      name="numeric-4-circle-outline"
+                      size={22}
+                      color={Colors.whiteColor}
+                    />
+                    <Text
+                      style={{
+                        ...Fonts.whiteColor17Regular,
+                        marginVertical: Sizes.fixPadding,
+                        marginLeft: 10,
+                      }}
+                    >
+                      Select Template
+                    </Text>
+                  </View>
+                  <View style={styles.containerSection}>
+                    <RNPickerSelect
+                      onValueChange={(value) =>
+                        setFieldValue("template_id_", value)
+                      }
+                      value={values.template_id_}
+                      useNativeAndroidPickerStyle={false}
+                      fixAndroidTouchableBug={true}
+                      doneText="Accept"
+                      Icon={() => {
+                        return (
+                          <MaterialIcons
+                            name="keyboard-arrow-down"
+                            size={22}
+                            color={Colors.grayColor}
+                            style={{ marginRight: 10, marginTop: 12 }}
+                          />
+                        );
+                      }}
+                      style={PickerStyles}
+                      placeholder={{
+                        label: "Select Template...",
+                        value: null,
+                      }}
+                      items={templatesQuery.data.map(
+                        ({ template_name, _id }) => ({
+                          label: template_name,
+                          value: _id,
+                        })
+                      )}
+                    />
+                  </View>
+                </View>
+              </View>
+              {/* 5-Select JobDescription */}
               <View
                 style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginLeft: 10,
+                  backgroundColor: Colors.blackColor,
+                  width: width,
                 }}
               >
-                <MaterialCommunityIcons
-                  name="numeric-5-circle-outline"
-                  size={22}
-                  color={Colors.whiteColor}
-                />
-                <Text
+                <View
                   style={{
-                    ...Fonts.whiteColor17Regular,
-                    marginVertical: Sizes.fixPadding,
+                    flexDirection: "row",
+                    alignItems: "center",
                     marginLeft: 10,
                   }}
                 >
-                  Job Description
-                </Text>
+                  <MaterialCommunityIcons
+                    name="numeric-5-circle-outline"
+                    size={22}
+                    color={Colors.whiteColor}
+                  />
+                  <Text
+                    style={{
+                      ...Fonts.whiteColor17Regular,
+                      marginVertical: Sizes.fixPadding,
+                      marginLeft: 10,
+                    }}
+                  >
+                    Job Description
+                  </Text>
+                </View>
+                <View style={styles.containerSection}>
+                  <TextInput
+                    style={{
+                      backgroundColor: "white",
+                      borderRadius: Sizes.fixPadding + 5.0,
+                      height: 80,
+                      padding: 10,
+                    }}
+                    placeholder="Enter Job Description..."
+                    placeholderTextColor={"#d6d6d6"}
+                    multiline={true}
+                    numberOfLines={4}
+                    keyboardAppearance="dark"
+                    returnKeyType="next"
+                    returnKeyLabel="next"
+                    onChangeText={handleChange("job_description_")}
+                    value={values.job_description_}
+                  />
+                </View>
               </View>
-              <View style={styles.containerSection}>
-                <TextInput
-                  style={{
-                    backgroundColor: "white",
-                    borderRadius: Sizes.fixPadding + 5.0,
-                    height: 80,
-                    padding: 10,
-                  }}
-                  placeholder="Enter Job Description..."
-                  placeholderTextColor={"#d6d6d6"}
-                  multiline={true}
-                  numberOfLines={4}
-                  keyboardAppearance="dark"
-                  returnKeyType="next"
-                  returnKeyLabel="next"
-                  onChangeText={handleChange("jobDescription")}
-                  value={values.jobDescription}
-                />
-              </View>
-            </View>
-            {/* 6-Select YourLocation */}
-            <View
-              style={{
-                backgroundColor: Colors.blackColor,
-                width: width,
-              }}
-            >
+              {/* 6-Select YourLocation */}
               <View
                 style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginLeft: 10,
+                  backgroundColor: Colors.blackColor,
+                  width: width,
                 }}
               >
-                <MaterialCommunityIcons
-                  name="numeric-6-circle-outline"
-                  size={22}
-                  color={Colors.whiteColor}
-                />
-                <Text
+                <View
                   style={{
-                    ...Fonts.whiteColor17Regular,
-                    marginVertical: Sizes.fixPadding,
+                    flexDirection: "row",
+                    alignItems: "center",
                     marginLeft: 10,
                   }}
                 >
-                  Your Location
-                </Text>
+                  <MaterialCommunityIcons
+                    name="numeric-6-circle-outline"
+                    size={22}
+                    color={Colors.whiteColor}
+                  />
+                  <Text
+                    style={{
+                      ...Fonts.whiteColor17Regular,
+                      marginVertical: Sizes.fixPadding,
+                      marginLeft: 10,
+                    }}
+                  >
+                    Your Location
+                  </Text>
+                </View>
+                <View style={styles.containerSection}>
+                  <TextInput
+                    editable={false}
+                    style={{
+                      backgroundColor: "white",
+                      borderRadius: Sizes.fixPadding + 5.0,
+                      height: 80,
+                      padding: 10,
+                    }}
+                    placeholder={values.job_address_}
+                    multiline={true}
+                    numberOfLines={4}
+                    keyboardAppearance="dark"
+                    returnKeyType="next"
+                    returnKeyLabel="next"
+                    onChangeText={handleChange("job_address_")}
+                    value={addressActual}
+                  />
+                </View>
               </View>
-              <View style={styles.containerSection}>
-                <TextInput
-                  editable={false}
-                  style={{
-                    backgroundColor: "white",
-                    borderRadius: Sizes.fixPadding + 5.0,
-                    height: 80,
-                    padding: 10,
-                  }}
-                  placeholder={values.job_address_}
-                  multiline={true}
-                  numberOfLines={4}
-                  keyboardAppearance="dark"
-                  returnKeyType="next"
-                  returnKeyLabel="next"
-                  onChangeText={handleChange("job_address_")}
-                  value={addressActual}
-                />
-              </View>
-            </View>
-            {/* Button Submit */}
-            <View style={styles.btn_box}>
-              <Button
-                style={styles.button}
-                onPress={handleSubmit}
-                color="black"
-              >
-                <Text
-                  style={{
-                    ...Fonts.blackColor19Bold,
-                    marginVertical: Sizes.fixPadding,
-                    marginLeft: 10,
-                  }}
+              {/* Button Submit */}
+              <View style={styles.btn_box}>
+                <Button
+                  style={styles.button}
+                  onPress={handleSubmit}
+                  color="black"
                 >
-                  CREATE TASK
-                </Text>
-              </Button>
-            </View>
+                  <Text
+                    style={{
+                      ...Fonts.blackColor19Bold,
+                      marginVertical: Sizes.fixPadding,
+                      marginLeft: 10,
+                    }}
+                  >
+                    CREATE TASK
+                  </Text>
+                </Button>
+              </View>
+            </ScrollView>
           </View>
         )}
       </Formik>
@@ -855,13 +661,8 @@ const NewTask = ({ navigation }) => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <StatusBar />
-      {!isLoaded ? (
-        LoadingScreen()
-      ) : (
-        <ScrollView style={{ flex: 1, backgroundColor: Colors.blackColor }}>
-          {form()}
-        </ScrollView>
-      )}
+
+      {form()}
     </SafeAreaView>
   );
 };
@@ -882,6 +683,7 @@ const styles = StyleSheet.create({
     borderRadius: Sizes.fixPadding + 5.0,
   },
   btn_box: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 20,

@@ -10,17 +10,17 @@ import {
   ToastAndroid,
   RefreshControl,
 } from "react-native";
+import { useQueryClient } from "@tanstack/react-query";
+import * as Location from "expo-location";
 import Dialog from "react-native-dialog";
 import MapView from "react-native-maps";
 import { Marker } from "react-native-maps";
-import { MaterialIcons } from "@expo/vector-icons";
-import { Colors, Sizes, Fonts } from "../../../constant/styles";
-import { truncateText } from "../../../helpers/utils";
+import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import dayjs from "dayjs";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { truncateText } from "../../../helpers/utils";
+import { Colors, Sizes, Fonts } from "../../../constant/styles";
 import StatusButton from "../../../components/StatusButton";
 import { updateTask } from "../../../service/TaskService";
-import { useQueryClient } from "@tanstack/react-query";
 
 const { width, height } = Dimensions.get("screen");
 
@@ -504,6 +504,37 @@ export const DialogMyTask = ({
 }) => {
   const queryClient = useQueryClient();
 
+  const [addressActual, setAddressActual] = useState(null);
+  const [location, setLocation] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      await getAddress();
+      console.log(addressActual, location);
+    })();
+  }, [addressActual]);
+
+  async function getAddress() {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== "granted") {
+      setErrorMsg("Permission to access location was denied");
+      return;
+    }
+    let location = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Highest,
+      maximumAge: 10000,
+    });
+    setLocation(location);
+    let address = await Location.reverseGeocodeAsync(location.coords);
+    let addressFormated =
+      address[0].street +
+      " " +
+      address[0].streetNumber +
+      ", " +
+      address[0].city;
+    setAddressActual(addressFormated);
+  }
+
   return (
     <View>
       {acceptDialog()}
@@ -572,6 +603,9 @@ export const DialogMyTask = ({
           onPress={() => {
             const update = {
               job_status_: "failed",
+              job_completed_datetime_: new Date(),
+              job_completed_latitude: location.coords.latitude,
+              job_completed_longitude: location.coords.longitude,
             };
             updateTask(item._id, update);
             queryClient.refetchQueries(["tasks"]);
@@ -652,6 +686,9 @@ export const DialogMyTask = ({
           onPress={() => {
             const update = {
               job_status_: "successful",
+              job_completed_datetime_: new Date(),
+              job_completed_latitude: location.coords.latitude,
+              job_completed_longitude: location.coords.longitude,
             };
             updateTask(item._id, update);
             queryClient.refetchQueries(["tasks"]);
@@ -684,6 +721,10 @@ export const DialogMyTask = ({
             showToastOrder(item?._id);
             const update = {
               job_status_: "inprogress",
+              job_pickup_datetime_: new Date(),
+              job_pickup_latitude: location.coords.latitude,
+              job_pickup_longitude: location.coords.longitude,
+              job_pickup_address_: addressActual,
             };
             updateTask(item._id, update);
             queryClient.refetchQueries(["tasks"]);

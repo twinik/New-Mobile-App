@@ -26,11 +26,15 @@ import { getAgentTasksAction } from "../../redux/slices/taskSlice";
 import { logoutAction } from "../../redux/slices/authSlice";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getTasks } from "../../service/TaskService";
+import { getCustomers, getTeams, getTemplates } from "../../service/NewTaskService";
 
 const { width } = Dimensions.get("screen");
 
 const OrdersScreen = ({ navigation }) => {
   const dispatch = useDispatch();
+  const customersQuery = useQuery(["customers"], () => getCustomers());
+  const teamsQuery = useQuery(["teams"], () => getTeams());
+  const templatesQuery = useQuery(["templates"], () => getTemplates());
 
   function AddTaskButton() {
     return (
@@ -40,7 +44,11 @@ const OrdersScreen = ({ navigation }) => {
           bottom: 100.0,
           ...styles.iconWrapStyle,
         }}
-        onPress={() => navigation.navigate("NewTask")}
+        onPress={() => navigation.navigate("NewTask", {
+          customersQuery,
+          teamsQuery,
+          templatesQuery
+        })}
       >
         <MaterialCommunityIcons
           name="plus"
