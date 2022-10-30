@@ -139,6 +139,12 @@ export const Fonts = {
     fontFamily: "Roboto_Regular",
   },
 
+  whiteColor12Medium: {
+    color: "#FFFFFF",
+    fontSize: 12.0,
+    fontFamily: "Roboto_Medium",
+  },
+
   whiteColor15Medium: {
     color: "#FFFFFF",
     fontSize: 15.0,

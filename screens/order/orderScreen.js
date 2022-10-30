@@ -27,6 +27,7 @@ import { logoutAction } from "../../redux/slices/authSlice";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getTasks } from "../../service/TaskService";
 import { getCustomers, getTeams, getTemplates } from "../../service/NewTaskService";
+import { getUserData } from "../../service/UserService";
 
 const { width } = Dimensions.get("screen");
 
@@ -35,6 +36,7 @@ const OrdersScreen = ({ navigation }) => {
   const customersQuery = useQuery(["customers"], () => getCustomers());
   const teamsQuery = useQuery(["teams"], () => getTeams());
   const templatesQuery = useQuery(["templates"], () => getTemplates());
+  const userDataQuery = useQuery(["userData"], () => getUserData());
 
   function AddTaskButton() {
     return (
@@ -47,7 +49,8 @@ const OrdersScreen = ({ navigation }) => {
         onPress={() => navigation.navigate("NewTask", {
           customersQuery,
           teamsQuery,
-          templatesQuery
+          templatesQuery,
+          userDataQuery
         })}
       >
         <MaterialCommunityIcons
@@ -72,13 +75,6 @@ const OrdersScreen = ({ navigation }) => {
 
 const Orders = ({ navigation }) => {
   const queryClient = useQueryClient();
-
-  const [index, setIndex] = useState(0);
-  const [routes] = useState([
-    { key: "first", title: "Open " },
-    { key: "second", title: "My Tasks " },
-    { key: "third", title: "History" },
-  ]);
   const { data, isLoading, error, isError, isFetching } = useQuery(
     ["tasks"],
     getTasks
@@ -107,6 +103,22 @@ const Orders = ({ navigation }) => {
     );
     setCompletedTasks(completedTasks);
   };
+
+  const [index, setIndex] = useState(0);
+  const [routes] = useState([
+    {
+      key: "first",
+      title: "Open",
+    },
+    {
+      key: "second",
+      title: "My Tasks",
+    },
+    {
+      key: "third",
+      title: "History",
+    },
+  ]);
 
   const renderScene = ({ route, jumpTo }) => {
     switch (route.key) {
@@ -162,19 +174,56 @@ const Orders = ({ navigation }) => {
             scrollEnabled={true}
             style={{ backgroundColor: "white" }}
             renderLabel={({ route, focused, color }) => (
-              <Text
-                style={
-                  focused
-                    ? {
-                        ...Fonts.primaryColor16Medium,
-                      }
-                    : {
-                        ...Fonts.grayColor14Medium,
-                      }
-                }
-              >
-                {route.title}
-              </Text>
+              <View style={{ flexDirection: "row" }}>
+                <Text
+                  style={
+                    focused
+                      ? {
+                          ...Fonts.primaryColor16Medium,
+                        }
+                      : {
+                          ...Fonts.grayColor14Medium,
+                        }
+                  }
+                >
+                  {route.title}
+                </Text>
+                <View>
+                  {route.key == "first" && createdTasks?.length > 0 ? (
+                    <View style={styles.lengthItems}>
+                      <Text
+                        style={{
+                          ...Fonts.whiteColor12Medium,
+                        }}
+                      >
+                        {createdTasks?.length}
+                      </Text>
+                    </View>
+                  ) : null}
+                  {route.key == "second" && assignedTasks?.length > 0 ? (
+                    <View style={styles.lengthItems}>
+                      <Text
+                        style={{
+                          ...Fonts.whiteColor12Medium,
+                        }}
+                      >
+                        {assignedTasks?.length}
+                      </Text>
+                    </View>
+                  ) : null}
+                  {route.key == "third" && completedTasks?.length > 0 ? (
+                    <View style={styles.lengthItems}>
+                      <Text
+                        style={{
+                          ...Fonts.whiteColor12Medium,
+                        }}
+                      >
+                        {completedTasks?.length}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+              </View>
             )}
           />
         )}
@@ -261,6 +310,15 @@ const styles = StyleSheet.create({
     borderRadius: 30.0,
     alignItems: "center",
     justifyContent: "center",
+  },
+  lengthItems: {
+    backgroundColor: Colors.primaryColor,
+    borderRadius: 10.0,
+    width: 20.0,
+    height: 20.0,
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 5.0,
   },
 });
 

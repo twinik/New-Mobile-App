@@ -86,6 +86,9 @@ const NewTask = ({ navigation }) => {
   const customersQuery = navigation.getParam("customersQuery");
   const teamsQuery = navigation.getParam("teamsQuery");
   const templatesQuery = navigation.getParam("templatesQuery");
+  const userDataQuery = navigation.getParam("userDataQuery");
+  const fleetId = userDataQuery.data._id;
+  console.log(fleetId);
 
   const create = async (values) => {
     const newTask = {
@@ -95,6 +98,7 @@ const NewTask = ({ navigation }) => {
       job_pickup_latitude: location.coords.latitude,
       job_pickup_longitude: location.coords.longitude,
       job_address_: addressActual,
+      fleet_id_: fleetId,
     };
     const response = await createTask(newTask);
     console.log(response);
