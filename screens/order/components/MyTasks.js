@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, memo } from "react";
 import { View, FlatList, Dimensions, RefreshControl } from "react-native";
 import { Colors, Sizes, Fonts } from "../../../constant/styles";
 import { EmptySkeleton, RenderTaskItem, DialogMyTask } from "./common";
@@ -44,16 +44,30 @@ function TaskList({ list, setShowStartDialog, setSelectedTask }) {
   );
 }
 
-const MyTasks = ({ data }) => {
-  const [showStartDialog, setShowStartDialog] = useState(false);
+const MyTasks = ({ data, navigation }) => {
+  const [showStartDialog, setShowStartDialog] = useState(
+    navigation.getParam("showModalParam") || false
+  );
   const [showFailedDialog, setShowFailedDialog] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+
+  const [idParam, setIdParam] = useState(
+    navigation.getParam("idParam") || null
+  );
 
   useEffect(() => {
     if (selectedTask) {
       let id = selectedTask._id;
       let task = data.find((item) => item._id === id);
       setSelectedTask(task);
+    } else {
+      async function taskCreatedFunction() {
+        let id = await navigation.getParam("taskCreated");
+        console.log("ID TASK CREATED", id);
+        let task = data.find((item) => item._id === id);
+        setSelectedTask(task);
+      }
+      taskCreatedFunction();
     }
   }, [data]);
 
@@ -76,4 +90,4 @@ const MyTasks = ({ data }) => {
   );
 };
 
-export default MyTasks;
+export default memo(MyTasks);

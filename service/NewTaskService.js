@@ -47,7 +47,13 @@ export const getTemplates = async () => {
     const response = await axios.get(`${API}/Template`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    return response.data;
+    if (response.data.length <= 0) {
+      return {
+        data: [],
+      };
+    } else {
+      return response.data;
+    }
   } catch (error) {
     console.error(error);
     throw error;

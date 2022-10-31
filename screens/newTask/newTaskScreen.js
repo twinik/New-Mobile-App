@@ -10,14 +10,11 @@ import {
   Dimensions,
   TextInput,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { withNavigation } from "react-navigation";
 import { Colors, Fonts, Sizes } from "../../constant/styles";
-import { MaterialIcons } from "@expo/vector-icons";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import moment from "moment";
-
-import { useQuery } from "@tanstack/react-query";
+import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import * as Location from "expo-location";
@@ -25,14 +22,9 @@ import Lottie from "lottie-react-native";
 import RNPickerSelect from "react-native-picker-select";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { Button } from "react-native-paper";
-import { VStack, FormControl, HStack } from "native-base";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  createTask,
-  getCustomers,
-  getTeams,
-  getTemplates,
-} from "../../service/NewTaskService";
+import { createTask } from "../../service/NewTaskService";
+import { StackActions, NavigationActions } from "react-navigation";
 
 const { width } = Dimensions.get("screen");
 
@@ -52,6 +44,10 @@ const NewTask = ({ navigation }) => {
   const [location, setLocation] = useState(null);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [isDatePickerVisible2, setDatePickerVisibility2] = useState(false);
+
+  const [showStartDialog, setShowStartDialog] = useState(false);
+  const [showFailedDialog, setShowFailedDialog] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
 
   const queryClient = useQueryClient();
 
@@ -88,7 +84,9 @@ const NewTask = ({ navigation }) => {
   const templatesQuery = navigation.getParam("templatesQuery");
   const userDataQuery = navigation.getParam("userDataQuery");
   const fleetId = userDataQuery.data._id;
-  console.log(fleetId);
+
+  let start = new Date();
+  let end = new Date();
 
   const create = async (values) => {
     const newTask = {
@@ -100,16 +98,43 @@ const NewTask = ({ navigation }) => {
       job_address_: addressActual,
       fleet_id_: fleetId,
     };
+    let minimumStartDate = new Date(start);
+    minimumStartDate = minimumStartDate.setMinutes(
+      minimumStartDate.getMinutes() - 1
+    );
+    let minimumEndDate = new Date(newTask.datetime_start_before_);
+    minimumEndDate = minimumEndDate.setMinutes(
+      minimumEndDate.getMinutes() + 15
+    );
+    if (newTask.datetime_start_before_ < minimumStartDate) {
+      alert("The start time cannot be earlier than the current time");
+      return;
+    }
+    if (newTask.datetime_end_before_ < minimumEndDate) {
+      alert(
+        "The end date must be at least 15 minutes greater than the start date"
+      );
+      return;
+    }
+
     const response = await createTask(newTask);
-    console.log(response);
-    console.log(newTask);
+    console.log("RESPONSE", response);
     queryClient.refetchQueries(["tasks"]);
-    navigation.goBack();
+    setSelectedTask(response);
+    setShowStartDialog(true);
+    const resetAction = StackActions.reset({
+      index: 0,
+      actions: [
+        NavigationActions.navigate({
+          routeName: "BottomTabBar",
+          params: { index: 1, showModalParam: true, taskCreated: response._id },
+        }),
+      ],
+    });
+    navigation.dispatch(resetAction);
   };
 
   function form() {
-    let start = new Date();
-    let end = new Date();
     end.setHours(end.getHours());
     end.setMinutes(end.getMinutes() + 15);
 
@@ -118,7 +143,7 @@ const NewTask = ({ navigation }) => {
         initialValues={{
           datetime_start_before_: start,
           datetime_end_before_: end,
-          customer_id_: "",
+          customer_id_: null,
           team_id_: "",
           template_id_: null,
           job_description_: "",
@@ -517,7 +542,7 @@ const NewTask = ({ navigation }) => {
                         label: "Select Template...",
                         value: null,
                       }}
-                      items={templatesQuery.data.map(
+                      items={templatesQuery?.data.map(
                         ({ template_name, _id }) => ({
                           label: template_name,
                           value: _id,
@@ -627,21 +652,27 @@ const NewTask = ({ navigation }) => {
               </View>
               {/* Button Submit */}
               <View style={styles.btn_box}>
-                <Button
-                  style={styles.button}
-                  onPress={handleSubmit}
-                  color="black"
-                >
-                  <Text
-                    style={{
-                      ...Fonts.blackColor19Bold,
-                      marginVertical: Sizes.fixPadding,
-                      marginLeft: 10,
-                    }}
+                {addressActual === null ? (
+                  <View style={styles.button}>
+                    <ActivityIndicator color="black" />
+                  </View>
+                ) : (
+                  <Button
+                    style={styles.button}
+                    onPress={handleSubmit}
+                    color="black"
                   >
-                    CREATE TASK
-                  </Text>
-                </Button>
+                    <Text
+                      style={{
+                        ...Fonts.blackColor19Bold,
+                        marginVertical: Sizes.fixPadding,
+                        marginLeft: 10,
+                      }}
+                    >
+                      CREATE TASK
+                    </Text>
+                  </Button>
+                )}
               </View>
             </ScrollView>
           </View>
@@ -665,7 +696,6 @@ const NewTask = ({ navigation }) => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <StatusBar />
-
       {form()}
     </SafeAreaView>
   );

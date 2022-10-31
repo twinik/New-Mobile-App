@@ -11,22 +11,22 @@ import {
   ToastAndroid,
 } from "react-native";
 import { withNavigation } from "react-navigation";
-import { MaterialIcons } from "@expo/vector-icons";
 import { Colors, Fonts, Sizes } from "../../constant/styles";
 import { TabView, TabBar } from "react-native-tab-view";
 import Lottie from "lottie-react-native";
 import OpenTasks from "./components/OpenTasks";
 import MyTasks from "./components/MyTasks";
 import HistoryTasks from "./components/HistoryTasks";
-
 import { useDispatch } from "react-redux";
 import Headerx from "./header";
 import BottomSheetComponente from "./BottomSheet";
-import { getAgentTasksAction } from "../../redux/slices/taskSlice";
-import { logoutAction } from "../../redux/slices/authSlice";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getTasks } from "../../service/TaskService";
-import { getCustomers, getTeams, getTemplates } from "../../service/NewTaskService";
+import {
+  getCustomers,
+  getTeams,
+  getTemplates,
+} from "../../service/NewTaskService";
 import { getUserData } from "../../service/UserService";
 
 const { width } = Dimensions.get("screen");
@@ -46,12 +46,14 @@ const OrdersScreen = ({ navigation }) => {
           bottom: 100.0,
           ...styles.iconWrapStyle,
         }}
-        onPress={() => navigation.navigate("NewTask", {
-          customersQuery,
-          teamsQuery,
-          templatesQuery,
-          userDataQuery
-        })}
+        onPress={() =>
+          navigation.navigate("NewTask", {
+            customersQuery,
+            teamsQuery,
+            templatesQuery,
+            userDataQuery,
+          })
+        }
       >
         <MaterialCommunityIcons
           name="plus"
@@ -84,6 +86,28 @@ const Orders = ({ navigation }) => {
   const [assignedTasks, setAssignedTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState([]);
 
+  const [index, setIndex] = useState(navigation.getParam("index") || 0);
+  const [showModalParam, setShowModalParam] = useState(
+    navigation.getParam("showModalParam") || false
+  );
+  const [taskCreated, setTaskCreated] = useState(
+    navigation.getParam("taskCreated") || null
+  );
+  const [routes] = useState([
+    {
+      key: "first",
+      title: "Open",
+    },
+    {
+      key: "second",
+      title: "My Tasks",
+    },
+    {
+      key: "third",
+      title: "History",
+    },
+  ]);
+
   useEffect(() => {
     filterTasks();
     StatusBar.setBarStyle("dark-content", true);
@@ -104,28 +128,19 @@ const Orders = ({ navigation }) => {
     setCompletedTasks(completedTasks);
   };
 
-  const [index, setIndex] = useState(0);
-  const [routes] = useState([
-    {
-      key: "first",
-      title: "Open",
-    },
-    {
-      key: "second",
-      title: "My Tasks",
-    },
-    {
-      key: "third",
-      title: "History",
-    },
-  ]);
-
   const renderScene = ({ route, jumpTo }) => {
     switch (route.key) {
       case "first":
         return <OpenTasks navigation={navigation} data={createdTasks} />;
       case "second":
-        return <MyTasks navigation={navigation} data={assignedTasks} />;
+        return (
+          <MyTasks
+            navigation={navigation}
+            data={assignedTasks}
+            showModalParam={showModalParam}
+            taskCreated={taskCreated}
+          />
+        );
       case "third":
         return <HistoryTasks navigation={navigation} data={completedTasks} />;
     }
@@ -314,7 +329,7 @@ const styles = StyleSheet.create({
   lengthItems: {
     backgroundColor: Colors.primaryColor,
     borderRadius: 10.0,
-    width: 20.0,
+    width: 22.0,
     height: 20.0,
     justifyContent: "center",
     alignItems: "center",

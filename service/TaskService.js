@@ -17,7 +17,8 @@ export const getTasks = async () => {
 
 export const updateTask = async (id, task) => {
   try {
-    await axios.put(`${API}/${id}`, task);
+    const response = await axios.put(`${API}/${id}`, task);
+    return response.data;
   } catch (error) {
     console.error(error.response.data);
   }

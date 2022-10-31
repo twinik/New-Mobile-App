@@ -9,6 +9,7 @@ import {
   TextInput,
   ToastAndroid,
   RefreshControl,
+  ActivityIndicator,
 } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
 import * as Location from "expo-location";
@@ -17,6 +18,7 @@ import MapView from "react-native-maps";
 import { Marker } from "react-native-maps";
 import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import dayjs from "dayjs";
+import Lottie from "lottie-react-native";
 import { truncateText } from "../../../helpers/utils";
 import { Colors, Sizes, Fonts } from "../../../constant/styles";
 import StatusButton from "../../../components/StatusButton";
@@ -501,16 +503,16 @@ export const DialogMyTask = ({
   showFailedDialog,
   setShowFailedDialog,
   item,
+  navigation,
+  goBackModal,
 }) => {
   const queryClient = useQueryClient();
-
   const [addressActual, setAddressActual] = useState(null);
   const [location, setLocation] = useState(null);
 
   useEffect(() => {
     (async () => {
       await getAddress();
-      console.log(addressActual, location);
     })();
   }, [addressActual]);
 
@@ -636,24 +638,42 @@ export const DialogMyTask = ({
         contentStyle={styles.dialogContainerStyle}
         headerStyle={{ margin: 0.0, padding: 0.0 }}
       >
-        <View
-          style={{
-            backgroundColor: "white",
-            height: height * 0.83,
-            borderRadius: Sizes.fixPadding,
-          }}
-        >
-          {orderId()}
-          <ScrollView showsVerticalScrollIndicator={false}>
-            {orderDetail()}
-            {descriptionDetail()}
-            {locationDetail()}
-            {templateDetail()}
-          </ScrollView>
-          {item?.job_status_ == "inprogress"
-            ? taskStartedButtons()
-            : cancelAndStartButton()}
-        </View>
+        {item === null || item === undefined ? (
+          <View
+            style={{
+              backgroundColor: "white",
+              height: height * 0.83,
+              borderRadius: Sizes.fixPadding,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Lottie
+              source={require("../../../assets/animations/loadingCreateTask.json")}
+              autoPlay
+              loop
+            />
+          </View>
+        ) : (
+          <View
+            style={{
+              backgroundColor: "white",
+              height: height * 0.83,
+              borderRadius: Sizes.fixPadding,
+            }}
+          >
+            {orderId()}
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {orderDetail()}
+              {descriptionDetail()}
+              {locationDetail()}
+              {templateDetail()}
+            </ScrollView>
+            {item?.job_status_ == "inprogress"
+              ? taskStartedButtons()
+              : cancelAndStartButton()}
+          </View>
+        )}
       </Dialog.Container>
     );
   }
@@ -690,9 +710,10 @@ export const DialogMyTask = ({
               job_completed_latitude: location.coords.latitude,
               job_completed_longitude: location.coords.longitude,
             };
-            updateTask(item._id, update);
+            console.log("WHEN SUCCESS: ", updateTask(item._id, update));
             queryClient.refetchQueries(["tasks"]);
             setShowStartDialog(false);
+            goBackModal === true && navigation.goBack();
           }}
           style={styles.succesfullButtonStyle}
         >
@@ -716,7 +737,7 @@ export const DialogMyTask = ({
         </TouchableOpacity>
         <TouchableOpacity
           activeOpacity={0.9}
-          onPress={() => {
+          onPress={async () => {
             //setTaskStarted(true);
             showToastOrder(item?._id);
             const update = {
@@ -726,7 +747,8 @@ export const DialogMyTask = ({
               job_pickup_longitude: location.coords.longitude,
               job_pickup_address_: addressActual,
             };
-            updateTask(item._id, update);
+            const response = await updateTask(item._id, update);
+            console.log("WHEN START: ", response.job_status_);
             queryClient.refetchQueries(["tasks"]);
           }}
           style={styles.modalAcceptButtonStyle}
