@@ -1,13 +1,15 @@
 import axios from "axios";
-const API = "http://10.0.2.2:3000/Task";
+const API = "https://nameless-bastion-86978.herokuapp.com/Task";
 import { auth } from "../config/firebase";
 
 export const getTasks = async () => {
   const token = await auth.currentUser.getIdToken();
   try {
+    console.log("token", token);
     const response = await axios.get(`${API}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
+    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error(error);

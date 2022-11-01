@@ -34,7 +34,6 @@ export default function SigninScreen({ navigation }) {
     if (email !== "" && password !== "") {
       try {
         await dispatch(loginAction({ email, password })).unwrap();
-        dispatch(getUserData());
         navigation.navigate("BottomTabBar");
       } catch (err) {
         console.log("[login]", err.message);

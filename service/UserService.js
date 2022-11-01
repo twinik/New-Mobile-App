@@ -1,5 +1,5 @@
 import axios from "axios";
-const API = "http://10.0.2.2:3000";
+const API = "https://nameless-bastion-86978.herokuapp.com";
 import { auth } from "../config/firebase";
 
 export const getUserData = async () => {

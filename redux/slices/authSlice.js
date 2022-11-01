@@ -52,26 +52,8 @@ export const updateUsername = createAsyncThunk(
 export const getUserData = createAsyncThunk(
   "auth/getUserData",
   async (_, thunkApi) => {
-    try {
-      const user = auth.currentUser;
-      console.log("[getUserData]->uid000", user?.uid);
-      const docRef = doc(firestoreDb, "users", user?.uid);
-      const res = await getDoc(docRef);
-      if (res.exists) {
-        const uid = user?.uid;
-        const userData = res.data();
-        const data = await getAgentByIdAction(uid);
-
-        return {
-          ...userData,
-          userMetaData: data,
-        };
-      } else {
-        return null;
-      }
-    } catch (err) {
-      return thunkApi.rejectWithValue(err.message || "Couldn't get User Data ");
-    }
+    
+    return null
   }
 );
 
@@ -243,9 +225,8 @@ export const loginAction = createAsyncThunk(
   async ({ email, password }, thunkApi) => {
     try {
       const { user } = await signInWithEmailAndPassword(auth, email, password);
-      const userData = await thunkApi.dispatch(getUserData(user?.uid));
       thunkApi.dispatch(updateAuthLoading(false));
-      return userData;
+      return user;
     } catch (err) {
       console.log(`err`, err);
       return thunkApi.rejectWithValue(err || "Couldn't Login");
