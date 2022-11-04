@@ -59,3 +59,21 @@ export const getTemplates = async () => {
     throw error;
   }
 };
+
+
+export const getAgents = async (param) => {
+  const token = await auth.currentUser.getIdToken();
+  console.log("param",param);
+  try {
+    const response = await axios.get(`${API}/Agent`, {
+      headers: { Authorization: `Bearer ${token}` },
+      params: {
+        ...(param?.teams.length != 0 && { teams: JSON.stringify(param.teams) }),
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}

@@ -20,8 +20,8 @@ function FilterStatusTasks() {
   const statusTasks = [
     {
       sourcex: require("../assets/images/markers/task_pending.png"),
-      status: "Unassigned",
-      name: "unassigned",
+      status: "Created",
+      name: "created",
       id: 1,
     },
     {

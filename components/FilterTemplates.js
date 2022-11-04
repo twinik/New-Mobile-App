@@ -16,9 +16,9 @@ import { useDispatch } from "react-redux";
 import { editSelect } from "../features/OrderFilters/statusSlice";
 import { useFormContext } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
-import { getTeams,getAgents } from "../service/NewTaskService";
+import { getTemplates } from "../service/NewTaskService";
 
-function FilterAgents() {
+function FilterTemplates() {
   
   const {
     control,
@@ -26,46 +26,29 @@ function FilterAgents() {
     formState: { errors },
     setValue,
     getValues,
-    watch
   } = useFormContext();
 
-  const values = watch("teams");
-  const queryFn = async () => {
-    return new Promise((resolve, reject) => {
-        getAgents({teams:values})
-        .then(resolve)
-        .catch((err) => {
-          reject(err);
-        });
-    });
-  };
-
-  
-
-  const teamsQuery = useQuery(["agents",values], queryFn);
-
-  console.log("teamsQuery",teamsQuery.data);
+  const teamsQuery = useQuery(["templates"], getTemplates);
 
   const renderItem = ({ item }) => {
-    const { first_name_,last_name_,_id } = item;
-    let selectedValues = getValues("agents");
+    const { template_name,_id } = item;
+    let selectedValues = getValues("templates");
     let isSelected = selectedValues.includes(_id);
     return (
-      <View key={_id}>
+      <View>
         <TouchableHighlight
           underlayColor="white"
           activeOpacity={0.9}
-          //onPress={() => navigation.navigate('Specialist', { name: item.name })}
           onPress={() => {
             if (isSelected) {
               setValue(
-                "agents",
+                "templates",
                 selectedValues.filter((item) => item !== _id)
               );
               return;
             }
 
-            setValue("agents", [...selectedValues, _id]);
+            setValue("templates", [...selectedValues, _id]);
           }}
         >
           <View
@@ -82,7 +65,7 @@ function FilterAgents() {
                   : styles.lettersInfoContainer2
               }
             >
-              {first_name_ + " " + last_name_}
+              {template_name}
             </Text>
           </View>
         </TouchableHighlight>
@@ -101,7 +84,7 @@ function FilterAgents() {
           marginLeft: 15,
         }}
       >
-        | by Teams:
+        | by Template:
       </Text>
       <FlatList
         horizontal
@@ -115,7 +98,7 @@ function FilterAgents() {
   );
 }
 
-export default FilterAgents;
+export default FilterTemplates;
 
 const styles = StyleSheet.create({
   specialistInfoContainer: {

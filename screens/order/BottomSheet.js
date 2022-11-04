@@ -14,7 +14,9 @@ import FilterStatusProjects from "../../components/FilterStatusProjects";
 import FilterStatusTasks from "../../components/FilterStatusTasks";
 import FilterstatusAgents from "../../components/FilterStatusAgents";
 import FilterDate from "../../components/FilterDate";
+import FilterTeam from "../../components/FilterTeam";
 import FilterAgents from "../../components/FilterAgents";
+import FilterTemplates from "../../components/FilterTemplates";
 
 import { BottomSheet } from "react-native-elements";
 import { useSelector } from "react-redux";
@@ -31,8 +33,6 @@ const BottomSheetComponente = ({ navigation }) => {
   function updateStateApp(item_field) {
     dispatch(updateappControlsliceField(item_field));
   }
-
-
 
   return (
     <BottomSheet
@@ -51,10 +51,11 @@ const BottomSheetComponente = ({ navigation }) => {
       >
         {iconAndCloseButton()}
         {divider()}
-        <FilterDate/>
-        <FilterStatusProjects />
+        <FilterDate />
         <FilterStatusTasks />
-        <FilterAgents/>
+        <FilterTemplates />
+        <FilterTeam />
+        <FilterAgents />
       </View>
     </BottomSheet>
   );

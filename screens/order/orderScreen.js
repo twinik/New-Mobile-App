@@ -43,9 +43,9 @@ const OrdersScreen = ({ navigation }) => {
     defaultValues: {
       date: new Date(),
       teams: [],
-      template: [],
+      templates: [],
       taskStatus: [],
-      agentStatus: [],
+      agents: [],
     },
   });
 
