@@ -20,6 +20,8 @@ import { LogBox } from "react-native";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import * as eva from "@eva-design/eva";
+import { ApplicationProvider, Layout, Text } from "@ui-kitten/components";
 
 /* LogBox.ignoreLogs([
   "ViewPropTypes will be removed",
@@ -64,8 +66,10 @@ export default () => {
   return (
     <QueryClientProvider client={queryClient}>
       <Provider store={store}>
-        <AppEnhancer />
-        <StatusBar style="auto" />
+        <ApplicationProvider {...eva} theme={eva.light}>
+          <AppEnhancer />
+          <StatusBar style="auto" />
+        </ApplicationProvider>
       </Provider>
     </QueryClientProvider>
   );

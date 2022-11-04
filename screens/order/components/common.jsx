@@ -51,7 +51,7 @@ export const RenderTaskItem = ({ item, toggleDialog }) => {
           </View>
           <View style={{ marginLeft: Sizes.fixPadding }}>
             <Text style={{ ...Fonts.blackColor18Medium }}>
-              {truncateText(item?._id, 10)}
+              {truncateText(item?.idOptional, 10)}
             </Text>
             <View style={{ marginTop: Sizes.fixPadding - 4 }}>
               <Text style={{ ...Fonts.grayColor12Medium }}>Team:</Text>
@@ -134,9 +134,30 @@ export const RenderTaskItem = ({ item, toggleDialog }) => {
             marginRight: 5,
           }}
         >
-          {item?.job_address_}
+          {truncateText(item?.job_address_,35)}
         </Text>
       </View>
+      {item?.fleet_id_?.first_name_ && (
+        <View style={styles.deliveryAndPickupAddressWrapStyle}>
+          <MaterialIcons
+            name="person"
+            size={22}
+            color={Colors.primaryColor}
+          />
+          <Text
+            style={{
+              ...Fonts.blackColor16Medium,
+              marginLeft: 5,
+              marginRight: 5,
+            }}
+          >
+            {truncateText(
+              item?.fleet_id_?.first_name_ + " " + item?.fleet_id_?.last_name_,
+              35
+            )}
+          </Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -1153,7 +1174,7 @@ const styles = StyleSheet.create({
     marginHorizontal: Sizes.fixPadding - 7.0,
   },
   acceptButtonStyle: {
-    backgroundColor: Colors.primaryColor,
+    backgroundColor: Colors.blueColor,
     borderRadius: Sizes.fixPadding - 5.0,
     paddingHorizontal: Sizes.fixPadding * 3.0,
     paddingVertical: Sizes.fixPadding,

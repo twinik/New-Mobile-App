@@ -13,11 +13,15 @@ import { Colors, Fonts, Sizes } from "../../constant/styles";
 import FilterStatusProjects from "../../components/FilterStatusProjects";
 import FilterStatusTasks from "../../components/FilterStatusTasks";
 import FilterstatusAgents from "../../components/FilterStatusAgents";
+import FilterDate from "../../components/FilterDate";
+import FilterAgents from "../../components/FilterAgents";
+
 import { BottomSheet } from "react-native-elements";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { appControlslice } from "../../features/statesapp/appControlSlice";
 import { updateappControlsliceField } from "../../features/statesapp/appControlSlice";
+import { useFormContext } from "react-hook-form";
 
 const BottomSheetComponente = ({ navigation }) => {
   const stateapp = useSelector((state) => state.appControlslice);
@@ -27,6 +31,8 @@ const BottomSheetComponente = ({ navigation }) => {
   function updateStateApp(item_field) {
     dispatch(updateappControlsliceField(item_field));
   }
+
+
 
   return (
     <BottomSheet
@@ -45,10 +51,10 @@ const BottomSheetComponente = ({ navigation }) => {
       >
         {iconAndCloseButton()}
         {divider()}
-
+        <FilterDate/>
         <FilterStatusProjects />
         <FilterStatusTasks />
-        <FilterstatusAgents />
+        <FilterAgents/>
       </View>
     </BottomSheet>
   );

@@ -28,6 +28,7 @@ import {
   createAgentAction,
   getAgentByIdAction,
 } from "../../helpers/agentUtils";
+import { getUserData as getUserDataAxios } from "../../service/UserService";
 
 const initialState = {
   isLoggedIn: false,
@@ -52,8 +53,9 @@ export const updateUsername = createAsyncThunk(
 export const getUserData = createAsyncThunk(
   "auth/getUserData",
   async (_, thunkApi) => {
-    
-    return null
+    const data = getUserDataAxios();
+
+    return data;
   }
 );
 

@@ -28,8 +28,10 @@ import {
   getTemplates,
 } from "../../service/NewTaskService";
 import { getUserData } from "../../service/UserService";
+import { store } from "../../redux/store";
 
 const { width } = Dimensions.get("screen");
+import { useForm, FormProvider, useFormContext } from "react-hook-form";
 
 const OrdersScreen = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -37,6 +39,23 @@ const OrdersScreen = ({ navigation }) => {
   const teamsQuery = useQuery(["teams"], () => getTeams());
   const templatesQuery = useQuery(["templates"], () => getTemplates());
   const userDataQuery = useQuery(["userData"], () => getUserData());
+  const methods = useForm({
+    defaultValues: {
+      date: new Date(),
+      teams: [],
+      template: [],
+      taskStatus: [],
+      agentStatus: [],
+    },
+  });
+
+
+  let values = methods.watch();
+
+  useEffect(() => {
+    console.log("values", values);
+  }, [values]);
+
 
   function AddTaskButton() {
     return (
@@ -66,11 +85,13 @@ const OrdersScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <StatusBar backgroundColor={Colors.primaryColor} />
-      <Headerx />
-      <Orders navigation={navigation} />
-      <BottomSheetComponente />
-      <AddTaskButton />
+      <FormProvider {...methods}>
+        <StatusBar backgroundColor={Colors.primaryColor} />
+        <Headerx />
+        <Orders navigation={navigation} />
+        <BottomSheetComponente />
+        <AddTaskButton />
+      </FormProvider>
     </SafeAreaView>
   );
 };
@@ -85,6 +106,7 @@ const Orders = ({ navigation }) => {
   const [createdTasks, setCreatedTasks] = useState([]);
   const [assignedTasks, setAssignedTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState([]);
+  let type = store.getState().auth.user.type;
 
   const [index, setIndex] = useState(navigation.getParam("index") || 0);
   const [showModalParam, setShowModalParam] = useState(
@@ -100,7 +122,7 @@ const Orders = ({ navigation }) => {
     },
     {
       key: "second",
-      title: "My Tasks",
+      title: type == "agent" ? "My Tasks" : "My Team Tasks",
     },
     {
       key: "third",
