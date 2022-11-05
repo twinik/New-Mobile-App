@@ -81,7 +81,7 @@ const BottomSheetComponente = ({ navigation }) => {
               updateStateApp({ key: "filters_on", value: false });
             }}
           >
-            Aplicar Filtros
+            Apply Filters
           </Text>
         </TouchableOpacity>
       </View>
@@ -138,6 +138,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignSelf: "center",
     width: "70%",
+    marginTop: Sizes.fixPadding * 1.0,
   },
   specialistInfoContainer: {
     height: 100.0,

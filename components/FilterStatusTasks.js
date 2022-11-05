@@ -42,6 +42,12 @@ function FilterStatusTasks() {
       name: "successful",
       id: 4,
     },
+    {
+      sourcex: require("../assets/images/markers/task_pending.png"),
+      status: "Failed",
+      name: "failed",
+      id: 1,
+    },
   ];
 
 

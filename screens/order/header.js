@@ -30,6 +30,9 @@ const Headerx = ({ navigation }) => {
     dispatch(updateappControlsliceField(item_field));
   }
 
+  let values = getValues();
+  let isFilterSelected = values.active
+
   return (
     <View style={styles.headerWrapStyle}>
       <Text style={{ ...Fonts.blackColor18Medium }}>
@@ -44,7 +47,7 @@ const Headerx = ({ navigation }) => {
       >
         <MaterialIcons
           style={{ marginRight: -10 }}
-          name="filter-alt"
+          name={!isFilterSelected ? "filter-alt" : "navigation"}
           size={26}
           color={Colors.blackColor}
           onPress={() => {
