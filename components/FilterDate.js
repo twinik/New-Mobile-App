@@ -48,39 +48,53 @@ function FilterDate() {
       >
         | by Date:
       </Text>
-      <TouchableOpacity
-        activeOpacity={0.9}
-        onPress={() => setDatePickerVisibility(true)}
-        style={{
-          paddingLeft: Sizes.fixPadding * 2.0,
-          paddingTop: Sizes.fixPadding * 1.0,
-        }}
-      >
-        <Text
+      <View style={{ flexDirection: "row" }}>
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={() => setDatePickerVisibility(true)}
           style={{
-            ...Fonts.blackColor15Bold,
-            paddingBottom: Sizes.fixPadding - 5.0,
+            paddingLeft: Sizes.fixPadding * 2.0,
+            paddingTop: Sizes.fixPadding * 1.0,
           }}
         >
-          START DATE
-        </Text>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <MaterialCommunityIcons
-            name="calendar"
-            size={17}
-            color={Colors.grayColor}
-          />
           <Text
             style={{
-              ...Fonts.blackColor14Regular,
-              alignContent: "center",
-              marginLeft: 5,
+              ...Fonts.blackColor15Bold,
+              paddingBottom: Sizes.fixPadding - 5.0,
             }}
           >
-            {getValues("date").toLocaleDateString()}
+            START DATE
           </Text>
-        </View>
-      </TouchableOpacity>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <MaterialCommunityIcons
+              name="calendar"
+              size={17}
+              color={Colors.grayColor}
+            />
+            <Text
+              style={{
+                ...Fonts.blackColor14Regular,
+                alignContent: "center",
+                marginLeft: 5,
+              }}
+            >
+              {getValues("date")
+                ? getValues("date").toLocaleDateString()
+                : "Select Date"}
+            </Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.modalAcceptButtonStyle}>
+          <Text
+            style={{
+              ...Fonts.blackColor15Bold,
+              color: Colors.whiteColor,
+            }}
+          >
+            Reset Date
+          </Text>
+        </TouchableOpacity>
+      </View>
       <DateTimePickerModal
         isVisible={isDatePickerVisible}
         mode="date"
@@ -94,6 +108,13 @@ function FilterDate() {
 export default FilterDate;
 
 const styles = StyleSheet.create({
+  modalAcceptButtonStyle: {
+    backgroundColor: Colors.primaryColor,
+    borderRadius: Sizes.fixPadding - 5.0,
+    padding: Sizes.fixPadding * 1.5,
+    marginLeft: "auto",
+    marginRight: Sizes.fixPadding * 2.0,
+  },
   specialistInfoContainer: {
     flexDirection: "row",
     height: 35.0,

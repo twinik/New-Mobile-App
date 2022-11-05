@@ -63,7 +63,6 @@ export const getTemplates = async () => {
 
 export const getAgents = async (param) => {
   const token = await auth.currentUser.getIdToken();
-  console.log("param",param);
   try {
     const response = await axios.get(`${API}/Agent`, {
       headers: { Authorization: `Bearer ${token}` },

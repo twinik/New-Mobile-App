@@ -24,6 +24,7 @@ import { useDispatch } from "react-redux";
 import { appControlslice } from "../../features/statesapp/appControlSlice";
 import { updateappControlsliceField } from "../../features/statesapp/appControlSlice";
 import { useFormContext } from "react-hook-form";
+import { useQueryClient } from "@tanstack/react-query";
 
 const BottomSheetComponente = ({ navigation }) => {
   const stateapp = useSelector((state) => state.appControlslice);
@@ -33,6 +34,14 @@ const BottomSheetComponente = ({ navigation }) => {
   function updateStateApp(item_field) {
     dispatch(updateappControlsliceField(item_field));
   }
+  const queryClient = useQueryClient();
+
+  const {
+    formState: { errors },
+    setValue,
+    getValues,
+    resetField,
+  } = useFormContext();
 
   return (
     <BottomSheet
@@ -47,6 +56,7 @@ const BottomSheetComponente = ({ navigation }) => {
           borderTopRightRadius: 10,
           borderTopLeftRadius: 10,
           borderColor: Colors.primaryColor,
+          Horizontal: Sizes.fixPadding * 2.0,
         }}
       >
         {iconAndCloseButton()}
@@ -56,6 +66,24 @@ const BottomSheetComponente = ({ navigation }) => {
         <FilterTemplates />
         <FilterTeam />
         <FilterAgents />
+        <TouchableOpacity
+          activeOpacity={0.9}
+          style={styles.modalAcceptButtonStyle}
+        >
+          <Text
+            style={{
+              ...Fonts.whiteColor18Medium,
+              textAlign: "center",
+            }}
+            onPress={() => {
+              setValue("active", !getValues("active"));
+              queryClient.resetQueries(["tasks", true]);
+              updateStateApp({ key: "filters_on", value: false });
+            }}
+          >
+            Aplicar Filtros
+          </Text>
+        </TouchableOpacity>
       </View>
     </BottomSheet>
   );
@@ -102,9 +130,18 @@ const styles = StyleSheet.create({
     paddingTop: Sizes.fixPadding,
     paddingBottom: Sizes.fixPadding + 5.0,
   },
+  modalAcceptButtonStyle: {
+    backgroundColor: Colors.primaryColor,
+    borderRadius: Sizes.fixPadding - 5.0,
+    paddingVertical: Sizes.fixPadding * 1.5,
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
+    width: "70%",
+  },
   specialistInfoContainer: {
     height: 100.0,
-    width: 120.0,
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "white",

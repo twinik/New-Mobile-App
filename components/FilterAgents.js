@@ -44,8 +44,6 @@ function FilterAgents() {
 
   const teamsQuery = useQuery(["agents",values], queryFn);
 
-  console.log("teamsQuery",teamsQuery.data);
-
   const renderItem = ({ item }) => {
     const { first_name_,last_name_,_id } = item;
     let selectedValues = getValues("agents");
@@ -101,7 +99,7 @@ function FilterAgents() {
           marginLeft: 15,
         }}
       >
-        | by Teams:
+        | by Agents:
       </Text>
       <FlatList
         horizontal

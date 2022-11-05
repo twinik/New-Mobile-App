@@ -33,13 +33,13 @@ function FilterStatusTasks() {
     {
       sourcex: require("../assets/images/markers/task_progress.png"),
       status: "In Progress",
-      name: "inProgress",
+      name: "inprogress",
       id: 3,
     },
     {
       sourcex: require("../assets/images/markers/task_completed.png"),
       status: "Completed",
-      name: "completed",
+      name: "successful",
       id: 4,
     },
   ];

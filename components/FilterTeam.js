@@ -50,6 +50,7 @@ function FilterTeams() {
             }
 
             setValue("teams", [...selectedValues, _id]);
+            setValue("agents", []);
           }}
         >
           <View

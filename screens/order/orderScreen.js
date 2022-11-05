@@ -41,21 +41,20 @@ const OrdersScreen = ({ navigation }) => {
   const userDataQuery = useQuery(["userData"], () => getUserData());
   const methods = useForm({
     defaultValues: {
-      date: new Date(),
+      date: null,
       teams: [],
       templates: [],
       taskStatus: [],
       agents: [],
+      active: false,
     },
   });
-
 
   let values = methods.watch();
 
   useEffect(() => {
     console.log("values", values);
   }, [values]);
-
 
   function AddTaskButton() {
     return (
@@ -98,9 +97,26 @@ const OrdersScreen = ({ navigation }) => {
 
 const Orders = ({ navigation }) => {
   const queryClient = useQueryClient();
-  const { data, isLoading, error, isError, isFetching } = useQuery(
-    ["tasks"],
-    getTasks
+  const { watch, getValues } = useFormContext();
+
+  let values = watch("active");
+  
+  let vals = getValues();
+  const queryFn = async () => {
+    return new Promise((resolve, reject) => {
+      getTasks({ values, ...vals })
+        .then(resolve)
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  };
+
+  console.log("vals", ["tasks", values]);
+
+  const { data, isLoading, error, isError, isFetching,isRefetching } = useQuery(
+    ["tasks", values],
+    queryFn
   );
 
   const [createdTasks, setCreatedTasks] = useState([]);
@@ -168,7 +184,7 @@ const Orders = ({ navigation }) => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isRefetching) {
     return (
       <View style={{ flex: 1 }}>
         <Lottie

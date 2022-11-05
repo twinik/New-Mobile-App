@@ -10,6 +10,7 @@ import { updateappControlsliceField } from "../../features/statesapp/appControlS
 
 import { withNavigation } from "react-navigation";
 import { useAuthSelector } from "../../redux/slices/authSlice";
+import { useFormContext } from "react-hook-form";
 
 const Headerx = ({ navigation }) => {
   const { user } = useAuthSelector();
@@ -20,9 +21,12 @@ const Headerx = ({ navigation }) => {
 
   const dispatch = useDispatch();
 
+  const { getValues, setValue } = useFormContext();
+
   function updateStateApp(item_field) {
     console.log(mapView);
     console.log("jkmom", item_field);
+    
     dispatch(updateappControlsliceField(item_field));
   }
 
