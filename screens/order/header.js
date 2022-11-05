@@ -23,20 +23,21 @@ const Headerx = ({ navigation }) => {
 
   const { getValues, setValue } = useFormContext();
 
+
   function updateStateApp(item_field) {
     console.log(mapView);
     console.log("jkmom", item_field);
-    
+
     dispatch(updateappControlsliceField(item_field));
   }
 
   let values = getValues();
-  let isFilterSelected = values.active
+  let isFilterSelected = values.active;
 
   return (
     <View style={styles.headerWrapStyle}>
       <Text style={{ ...Fonts.blackColor18Medium }}>
-        Hello, {user?.username}!
+        Hello, {user?.name}!
       </Text>
       <View
         style={{
@@ -58,34 +59,6 @@ const Headerx = ({ navigation }) => {
             }
           }}
         />
-
-        <TouchableOpacity
-          style={{
-            flexDirection: "row",
-            position: "relative",
-            justifyContent: "space-between",
-            backgroundColor: "white",
-            marginLeft: 20,
-            borderRadius: 3,
-            alignItems: "center",
-            borderColor: Colors.primaryColor,
-            borderWidth: 1,
-            justifyContent: "center",
-          }}
-          onPress={() => {
-            navigation.navigate("MapView");
-          }}
-        >
-          <MaterialCommunityIcons
-            style={{ marginLeft: 5, marginRight: 5 }}
-            size={20}
-            color={Colors.primaryColor}
-            name="map-marker"
-          />
-          <Text style={{ ...Fonts.primaryColor, marginRight: 10 }}>
-            Map View
-          </Text>
-        </TouchableOpacity>
       </View>
     </View>
   );

@@ -53,9 +53,21 @@ export const updateUsername = createAsyncThunk(
 export const getUserData = createAsyncThunk(
   "auth/getUserData",
   async (_, thunkApi) => {
-    const data = getUserDataAxios();
+    const data = await getUserDataAxios();
+    let name;
+    if (data?.type === "customer") {
+      name = data.customer_username_;
+    }
 
-    return data;
+    if (data?.type === "agent") {
+      name = data.first_name_ + " " + data.last_name_;
+    }
+
+    if (data?.type === "manager") {
+      name = data.first_name_ + " " + data.last_name_;
+    }
+
+    return { ...data, name: name };
   }
 );
 
