@@ -72,7 +72,7 @@ export const RenderTaskItem = ({ item, toggleDialog }) => {
             <View style={{ marginTop: Sizes.fixPadding - 4 }}>
               <Text style={{ ...Fonts.grayColor12Medium }}>Template:</Text>
               <Text style={{ ...Fonts.blackColor14Medium }}>
-                {truncateText(item?.template_name_, 20)}
+                {truncateText(item?.template_id_?.template_name, 20)}
               </Text>
             </View>
           </View>

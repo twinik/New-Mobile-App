@@ -25,7 +25,9 @@ import { Button } from "react-native-paper";
 import { useQueryClient } from "@tanstack/react-query";
 import { createTask } from "../../service/NewTaskService";
 import { StackActions, NavigationActions } from "react-navigation";
-
+import { useQuery } from "@tanstack/react-query";
+import { getAgents } from "../../service/NewTaskService";
+import { store } from "../../redux/store";
 const { width } = Dimensions.get("screen");
 
 const validations = Yup.object().shape({
@@ -48,6 +50,7 @@ const NewTask = ({ navigation }) => {
   const [showStartDialog, setShowStartDialog] = useState(false);
   const [showFailedDialog, setShowFailedDialog] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+  let type = store.getState().auth.user?.type;
 
   const queryClient = useQueryClient();
 
@@ -83,6 +86,7 @@ const NewTask = ({ navigation }) => {
   const teamsQuery = navigation.getParam("teamsQuery");
   const templatesQuery = navigation.getParam("templatesQuery");
   const userDataQuery = navigation.getParam("userDataQuery");
+  const agentsQuery = useQuery(["agents"], getAgents);
   const fleetId = userDataQuery.data._id;
 
   let start = new Date();
@@ -96,7 +100,7 @@ const NewTask = ({ navigation }) => {
       job_pickup_latitude: location.coords.latitude,
       job_pickup_longitude: location.coords.longitude,
       job_address_: addressActual,
-      fleet_id_: fleetId,
+      ...(type === "agent" && { fleet_id_: fleetId }),
     };
     let minimumStartDate = new Date(start);
     minimumStartDate = minimumStartDate.setMinutes(
@@ -552,6 +556,74 @@ const NewTask = ({ navigation }) => {
                   </View>
                 </View>
               </View>
+              {/* 5-Select Agent */}
+              {type != "agent" && (
+                <View
+                  style={{
+                    backgroundColor: Colors.blackColor,
+                    width: width,
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginLeft: 10,
+                    }}
+                  >
+                    <MaterialCommunityIcons
+                      name="numeric-2-circle-outline"
+                      size={22}
+                      color={Colors.whiteColor}
+                    />
+                    <Text
+                      style={{
+                        ...Fonts.whiteColor17Regular,
+                        marginVertical: Sizes.fixPadding,
+                        marginLeft: 10,
+                      }}
+                    >
+                      Select agents
+                    </Text>
+                  </View>
+                  <View style={styles.containerSection}>
+                    <RNPickerSelect
+                      onValueChange={(value) =>
+                        setFieldValue("fleet_id_", value)
+                      }
+                      value={values.fleet_id_}
+                      useNativeAndroidPickerStyle={false}
+                      fixAndroidTouchableBug={true}
+                      doneText="Accept"
+                      Icon={() => {
+                        return (
+                          <MaterialIcons
+                            name="keyboard-arrow-down"
+                            size={22}
+                            color={Colors.grayColor}
+                            style={{ marginRight: 10, marginTop: 12 }}
+                          />
+                        );
+                      }}
+                      style={PickerStyles}
+                      placeholder={{
+                        label: "Select Agent...",
+                        value: null,
+                      }}
+                      items={agentsQuery?.data?.map(
+                        ({ username_, _id }) => ({
+                          label: username_,
+                          value: _id,
+                        })
+                      ) || [{
+                        label: "empty",
+                        value: "empty",
+                      }]}
+                    />
+                  </View>
+                </View>
+              )}
+
               {/* 5-Select JobDescription */}
               <View
                 style={{

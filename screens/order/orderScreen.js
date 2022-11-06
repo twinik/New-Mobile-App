@@ -85,7 +85,7 @@ const OrdersScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <FormProvider {...methods}>
-        <StatusBar backgroundColor={Colors.primaryColor} />
+        <StatusBar />
         <Headerx />
         <Orders navigation={navigation} />
         <BottomSheetComponente />
@@ -123,6 +123,8 @@ const Orders = ({ navigation }) => {
   const [assignedTasks, setAssignedTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState([]);
   let type = store.getState().auth.user.type;
+  let id = store.getState().auth.user._id;
+
 
   const [index, setIndex] = useState(navigation.getParam("index") || 0);
   const [showModalParam, setShowModalParam] = useState(
@@ -157,11 +159,11 @@ const Orders = ({ navigation }) => {
     setCreatedTasks(createdTasks);
     const assignedTasks = data?.filter(
       (task) =>
-        task.job_status_ == "assigned" || task.job_status_ == "inprogress"
+        (task.job_status_ == "assigned" || task.job_status_ == "inprogress") && (task?.fleet_id_?._id == id || type != "agent")
     );
     setAssignedTasks(assignedTasks);
     const completedTasks = data?.filter(
-      (task) => task.job_status_ == "failed" || task.job_status_ == "successful"
+      (task) => (task.job_status_ == "failed" || task.job_status_ == "successful") && (task?.fleet_id_?._id == id || type != "agent")
     );
     setCompletedTasks(completedTasks);
   };

@@ -29,7 +29,7 @@ class ProfileScreen extends Component {
   render() {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
-        <StatusBar backgroundColor={Colors.primaryColor} />
+        <StatusBar  />
         <View style={{ flex: 1 }}>
           {this.header()}
           {this.userInfo()}

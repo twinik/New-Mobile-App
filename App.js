@@ -66,7 +66,6 @@ export default () => {
     <QueryClientProvider client={queryClient}>
       <Provider store={store}>
           <AppEnhancer />
-          <StatusBar style="auto" />
       </Provider>
     </QueryClientProvider>
   );

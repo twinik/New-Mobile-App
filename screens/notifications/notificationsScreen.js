@@ -52,7 +52,7 @@ class NotificationScreen extends Component {
     render() {
         return (
             <SafeAreaView style={{ flex: 1, }}>
-                <StatusBar translucent={false} backgroundColor={Colors.primaryColor} />
+                <StatusBar translucent={false}  />
                 <Notification navigation={this.props.navigation} />
             </SafeAreaView>
         )

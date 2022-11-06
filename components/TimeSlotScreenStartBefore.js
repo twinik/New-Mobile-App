@@ -211,7 +211,7 @@ const TimeSlotScreenStartBefore = () => {
 
     return (
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
-            <StatusBar backgroundColor={Colors.primary} />
+            <StatusBar  />
             {
                 <View style={{ flex: 1}}>
                     <View style={{flexDirection: 'row', height:60,  paddingLeft: 10,

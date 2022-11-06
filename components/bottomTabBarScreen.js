@@ -46,7 +46,7 @@ class BottomTabBarScreen extends Component {
         <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
           <StatusBar
             translucent={false}
-            backgroundColor={Colors.primaryColor}
+            backgroundColor="transparent"
           />
           {this.state.currentIndex == 1 ? (
             <OrderScreen />

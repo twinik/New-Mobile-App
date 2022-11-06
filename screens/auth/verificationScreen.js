@@ -50,7 +50,7 @@ class VerificationScreen extends Component {
   render() {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: "#F4F4F4" }}>
-        <StatusBar backgroundColor={Colors.primaryColor} />
+        <StatusBar  />
         <View style={{ flex: 1 }}>
           <ScrollView showsVerticalScrollIndicator={false}>
             {this.backArrow()}

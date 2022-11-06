@@ -67,7 +67,7 @@ export const getAgents = async (param) => {
     const response = await axios.get(`${API}/Agent`, {
       headers: { Authorization: `Bearer ${token}` },
       params: {
-        ...(param?.teams.length != 0 && { teams: JSON.stringify(param.teams) }),
+        ...(param?.teams?.length != 0 && { teams: JSON.stringify(param.teams) }),
       }
     });
     return response.data;

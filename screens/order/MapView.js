@@ -29,7 +29,7 @@ const MapViewScreen =({navigation}) => {
 
     return (
         <SafeAreaView style={{ flex: 1, }}>
-            <StatusBar backgroundColor={Colors.primaryColor} />
+            <StatusBar  />
             <View>
                 {<Headermap/>}
                 {<ShowMapScreen/>}
