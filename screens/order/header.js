@@ -1,7 +1,6 @@
 import React, { Component, useState, useEffect } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
 import { Colors, Fonts, Sizes } from "../../constant/styles";
 
 import { useSelector } from "react-redux";
@@ -46,9 +45,9 @@ const Headerx = ({ navigation }) => {
           justifyContent: "space-between",
         }}
       >
-        <MaterialIcons
-          style={{ marginRight: -10 }}
-          name={!isFilterSelected ? "filter-alt" : "navigation"}
+        <MaterialCommunityIcons
+          style={{ marginRight: -5 }}
+          name={!isFilterSelected ? "filter" : "filter-check"}
           size={26}
           color={Colors.blackColor}
           onPress={() => {

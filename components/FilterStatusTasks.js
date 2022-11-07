@@ -19,7 +19,7 @@ import { useFormContext } from "react-hook-form";
 function FilterStatusTasks() {
   const statusTasks = [
     {
-      sourcex: require("../assets/images/markers/task_pending.png"),
+      sourcex: require("../assets/images/markers/task_created.png"),
       status: "Created",
       name: "created",
       id: 1,

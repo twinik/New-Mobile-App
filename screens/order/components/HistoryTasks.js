@@ -48,7 +48,7 @@ const HistoryTaskList = ({ navigation, data }) => {
   const [selectedTask, setSelectedTask] = useState(null);
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#F4F4F4" }}>
+    <View style={{ flex: 1, backgroundColor: Colors.background }}>
       {(!data || data?.length === 0) && <EmptySkeleton />}
       <TaskList
         list={data}

@@ -165,11 +165,11 @@ const NewTask = ({ navigation }) => {
           errors,
           touched,
         }) => (
-          <View style={{ flex: 1, backgroundColor: Colors.blackColor }}>
+          <View style={{ flex: 1, backgroundColor: Colors.primaryColor }}>
             <ScrollView>
               <View
                 style={{
-                  backgroundColor: Colors.blackColor,
+                  backgroundColor: Colors.primaryColor,
                   width: width,
                 }}
               >
@@ -280,7 +280,7 @@ const NewTask = ({ navigation }) => {
                   </TouchableOpacity>
                   <View
                     style={{
-                      backgroundColor: Colors.blackColor,
+                      backgroundColor: Colors.primaryColor,
                       width: 1.0,
                       height: 90.0,
                     }}
@@ -371,7 +371,7 @@ const NewTask = ({ navigation }) => {
               {/* 2-Customer selection */}
               <View
                 style={{
-                  backgroundColor: Colors.blackColor,
+                  backgroundColor: Colors.primaryColor,
                   width: width,
                 }}
               >
@@ -392,6 +392,7 @@ const NewTask = ({ navigation }) => {
                       ...Fonts.whiteColor17Regular,
                       marginVertical: Sizes.fixPadding,
                       marginLeft: 10,
+                      
                     }}
                   >
                     Select Customer
@@ -496,7 +497,7 @@ const NewTask = ({ navigation }) => {
                 <View
                   style={{
                     flex: 1,
-                    backgroundColor: Colors.blackColor,
+                    backgroundColor: Colors.primaryColor,
                     width: width,
                   }}
                 >
@@ -560,7 +561,7 @@ const NewTask = ({ navigation }) => {
               {type != "agent" && (
                 <View
                   style={{
-                    backgroundColor: Colors.blackColor,
+                    backgroundColor: Colors.primaryColor,
                     width: width,
                   }}
                 >
@@ -627,7 +628,7 @@ const NewTask = ({ navigation }) => {
               {/* 5-Select JobDescription */}
               <View
                 style={{
-                  backgroundColor: Colors.blackColor,
+                  backgroundColor: Colors.primaryColor,
                   width: width,
                 }}
               >
@@ -657,7 +658,7 @@ const NewTask = ({ navigation }) => {
                   <TextInput
                     style={{
                       backgroundColor: "white",
-                      borderRadius: Sizes.fixPadding + 5.0,
+                      borderRadius: Sizes.fixPadding + 1.0,
                       height: 80,
                       padding: 10,
                     }}
@@ -676,7 +677,7 @@ const NewTask = ({ navigation }) => {
               {/* 6-Select YourLocation */}
               <View
                 style={{
-                  backgroundColor: Colors.blackColor,
+                  backgroundColor: Colors.primaryColor,
                   width: width,
                 }}
               >
@@ -707,7 +708,7 @@ const NewTask = ({ navigation }) => {
                     editable={false}
                     style={{
                       backgroundColor: "white",
-                      borderRadius: Sizes.fixPadding + 5.0,
+                      borderRadius: Sizes.fixPadding + 1.0,
                       height: 80,
                       padding: 10,
                     }}
@@ -741,7 +742,7 @@ const NewTask = ({ navigation }) => {
                         marginLeft: 10,
                       }}
                     >
-                      CREATE TASK
+                      Create Task
                     </Text>
                   </Button>
                 )}
@@ -780,13 +781,14 @@ const styles = StyleSheet.create({
     paddingRight: 15,
     paddingLeft: 15,
     paddingBottom: 10,
+   
   },
   button: {
     height: 50,
     width: "50%",
     justifyContent: "center",
     backgroundColor: Colors.whiteColor,
-    borderRadius: Sizes.fixPadding + 5.0,
+    borderRadius: Sizes.fixPadding + 1.0,
   },
   btn_box: {
     flex: 1,
@@ -858,8 +860,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: Colors.whiteColor,
-    borderRadius: Sizes.fixPadding + 5.0,
+    borderRadius: Sizes.fixPadding + 1.0,
     borderWidth: 1.0,
+    borderColor : Colors.whiteColor,
     marginLeft: 10,
     marginRight: 10,
   },
@@ -913,7 +916,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: Colors.primaryColor,
-    borderRadius: Sizes.fixPadding + 5.0,
+    borderRadius: Sizes.fixPadding + 1.0,
     height: 55.0,
     width: "100%",
   },
@@ -922,8 +925,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: Colors.whiteColor,
-    borderRadius: Sizes.fixPadding + 5.0,
-    borderColor: Colors.blackColor,
+    borderRadius: Sizes.fixPadding + 1.0,
+    borderColor: Colors.whiteColor,
     height: 90.0,
     borderWidth: 1.0,
   },
@@ -958,7 +961,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     height: 55.0,
     marginTop: Sizes.fixPadding + 5.0,
-    borderRadius: Sizes.fixPadding + 5.0,
+    borderRadius: Sizes.fixPadding + 1.0,
   },
 });
 
@@ -968,14 +971,14 @@ const PickerStyles = StyleSheet.create({
     color: "black",
     paddingRight: 30,
     backgroundColor: "white",
-    borderRadius: Sizes.fixPadding + 5.0,
+    borderRadius: Sizes.fixPadding + 1.0,
   },
   inputAndroid: {
     marginLeft: -6.5,
     color: "black",
     padding: 10,
     backgroundColor: "white",
-    borderRadius: Sizes.fixPadding + 5.0,
+    borderRadius: Sizes.fixPadding + 1.0,
   },
   placeholder: {
     color: "lightgray",

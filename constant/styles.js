@@ -222,9 +222,10 @@ export const Colors = {
   blackColor: "#333333",
   whiteColor: "#FFFFFF",
   grayColor: "#9E9E9E",
-  primaryColor: "#333333",
-  lightGrayColor: "#E9E9E9",
+  primaryColor: "#1DA1F2",
+  lightGrayColor: "#E1E8ED",
   blueColor: "#2196F3",
+  background: "#AAB8C2"
 };
 
 export const Sizes = {

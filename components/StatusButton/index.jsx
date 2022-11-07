@@ -33,7 +33,7 @@ const getImgSrc = (status) => {
     case "successful":
       return require(`../../assets/images/markers/task_completed.png`);
     case "created":
-      return require(`../../assets/images/markers/task_assigned.png`);
+      return require(`../../assets/images/markers/task_created.png`);
   }
 };
 const StatusButton = ({

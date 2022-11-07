@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     alignSelf: "center",
-    width: "70%",
+    width: "50%",
     marginTop: Sizes.fixPadding * 1.0,
   },
   specialistInfoContainer: {

@@ -121,22 +121,6 @@ export const RenderTaskItem = ({ item, toggleDialog }) => {
           </View>
         </View>
       </View>
-      <View style={styles.deliveryAndPickupAddressWrapStyle}>
-        <MaterialIcons
-          name="location-on"
-          size={22}
-          color={Colors.primaryColor}
-        />
-        <Text
-          style={{
-            ...Fonts.blackColor16Medium,
-            marginLeft: 5,
-            marginRight: 5,
-          }}
-        >
-          {truncateText(item?.job_address_,35)}
-        </Text>
-      </View>
       {item?.fleet_id_?.first_name_ && (
         <View style={styles.deliveryAndPickupAddressWrapStyle}>
           <MaterialIcons
@@ -158,6 +142,23 @@ export const RenderTaskItem = ({ item, toggleDialog }) => {
           </Text>
         </View>
       )}
+      <View style={styles.deliveryAndPickupAddressWrapStyle2}>
+        <MaterialIcons
+          name="location-on"
+          size={22}
+          color={Colors.primaryColor}
+        />
+        <Text
+          style={{
+            ...Fonts.blackColor16Medium,
+            marginLeft: 5,
+            marginRight: 5,
+          }}
+        >
+          {truncateText(item?.job_address_,35)}
+        </Text>
+      </View>
+   
     </View>
   );
 };
@@ -182,20 +183,20 @@ export const EmptySkeleton = ({ message }) => {
       <View
         style={{
           flex: 1,
-          backgroundColor: "#F4F4F4",
+          backgroundColor: Colors.background,
           alignItems: "center",
           justifyContent: "center",
         }}
       >
         <MaterialCommunityIcons
-          name="shopping"
-          size={60}
-          color={Colors.grayColor}
+          name="weather-sunny"
+          size={80}
+          color={Colors.whiteColor}
         />
         <Text
-          style={{ ...Fonts.grayColor17Medium, marginTop: Sizes.fixPadding }}
+          style={{ ...Fonts.whiteColor25Medium, marginTop: Sizes.fixPadding }}
         >
-          {message || "Empty"}
+          {message || "All clear"}
         </Text>
       </View>
     </ScrollView>
@@ -1184,6 +1185,15 @@ const styles = StyleSheet.create({
   deliveryAndPickupAddressWrapStyle: {
     backgroundColor: Colors.lightGrayColor,
     flexDirection: "row",
+    borderTopLeftRadius: Sizes.fixPadding - 5.0,
+    borderTopRightRadius: Sizes.fixPadding - 5.0,
+    paddingHorizontal: Sizes.fixPadding + 3.0,
+    paddingVertical: Sizes.fixPadding,
+    alignItems: "center",
+  },
+  deliveryAndPickupAddressWrapStyle2: {
+    backgroundColor: Colors.lightGrayColor,
+    flexDirection: "row",
     borderBottomLeftRadius: Sizes.fixPadding - 5.0,
     borderBottomRightRadius: Sizes.fixPadding - 5.0,
     paddingHorizontal: Sizes.fixPadding + 3.0,
@@ -1195,12 +1205,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Sizes.fixPadding + 3.0,
     paddingVertical: Sizes.fixPadding,
     justifyContent: "space-between",
-  },
-  orderDetailWrapStyle: {
-    backgroundColor: Colors.whiteColor,
-    borderRadius: Sizes.fixPadding - 5.0,
-    marginHorizontal: Sizes.fixPadding,
-    marginBottom: Sizes.fixPadding * 2.0,
   },
   rejectButtonStyle: {
     flex: 0.5,
@@ -1229,7 +1233,7 @@ const styles = StyleSheet.create({
   },
   dialogContainerStyle: {
     borderRadius: Sizes.fixPadding,
-    width: width - 70,
+    width: width - 50,
     alignSelf: "center",
     margin: 0,
     padding: 0,
@@ -1319,15 +1323,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
   },
-  deliveryAndPickupAddressWrapStyle: {
-    backgroundColor: Colors.lightGrayColor,
-    flexDirection: "row",
-    borderBottomLeftRadius: Sizes.fixPadding - 5.0,
-    borderBottomRightRadius: Sizes.fixPadding - 5.0,
-    paddingHorizontal: Sizes.fixPadding + 3.0,
-    paddingVertical: Sizes.fixPadding,
-    alignItems: "center",
-  },
+
   orderAndPaymentDetailWrapStyle: {
     flexDirection: "row",
     paddingHorizontal: Sizes.fixPadding + 3.0,
@@ -1338,7 +1334,10 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.whiteColor,
     borderRadius: Sizes.fixPadding - 5.0,
     marginHorizontal: Sizes.fixPadding,
-    marginBottom: Sizes.fixPadding * 2.0,
+    marginBottom: Sizes.fixPadding ,
+    borderWidth:3,
+    borderColor: Colors.whiteColor,
+
   },
   rejectButtonStyle: {
     flex: 0.5,
@@ -1461,26 +1460,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
   },
-  deliveryAndPickupAddressWrapStyle: {
-    backgroundColor: Colors.lightGrayColor,
-    flexDirection: "row",
-    borderBottomLeftRadius: Sizes.fixPadding - 5.0,
-    borderBottomRightRadius: Sizes.fixPadding - 5.0,
-    paddingHorizontal: Sizes.fixPadding + 3.0,
-    paddingVertical: Sizes.fixPadding,
-    alignItems: "center",
-  },
+
   orderAndPaymentDetailWrapStyle: {
     flexDirection: "row",
     paddingHorizontal: Sizes.fixPadding + 3.0,
     paddingVertical: Sizes.fixPadding,
     justifyContent: "space-between",
-  },
-  orderDetailWrapStyle: {
-    backgroundColor: Colors.whiteColor,
-    borderRadius: Sizes.fixPadding - 5.0,
-    marginHorizontal: Sizes.fixPadding,
-    marginBottom: Sizes.fixPadding * 2.0,
   },
   rejectButtonStyle: {
     flex: 0.5,

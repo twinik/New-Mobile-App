@@ -14,6 +14,7 @@ import LottieView from "lottie-react-native";
 import { auth } from "../config/firebase";
 import { useDispatch } from "react-redux";
 import { getUserData } from "../redux/slices/authSlice";
+import babelConfig from "../babel.config";
 
 const image = "../assets/images/bgmain.png";
 const SplashScreen = ({ navigation }) => {
@@ -34,7 +35,7 @@ const SplashScreen = ({ navigation }) => {
 
   const image = "../";
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.primaryColor}}>
       <StatusBar translucent backgroundColor="transparent" />
 
       <View
@@ -53,10 +54,10 @@ const SplashScreen = ({ navigation }) => {
         />
 
         <Image
-          source={require("../assets/agnitu_logo.png")}
+          source={require("../assets/logo_dummy.png")}
           style={{
-            height: 135.0,
-            width: "60%",
+            //height: 135.0,
+            //width: "90%",
             resizeMode: "contain",
             //marginBottom: Sizes.fixPadding * 4.0,
           }}
@@ -65,10 +66,10 @@ const SplashScreen = ({ navigation }) => {
           style={{
             ...Fonts.primaryColor18Bold,
             textAlign: "center",
-            marginTop: -40,
+            marginTop: 0,
           }}
         >
-          F I E L D | W O R K F O R C E
+          O N D E M A N D
         </Text>
       </View>
     </SafeAreaView>
