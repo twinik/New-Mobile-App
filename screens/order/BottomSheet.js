@@ -25,6 +25,24 @@ import { appControlslice } from "../../features/statesapp/appControlSlice";
 import { updateappControlsliceField } from "../../features/statesapp/appControlSlice";
 import { useFormContext } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
+import { store } from "../../redux/store";
+
+const validateNotEmptyObject = (obj) => {
+  let isEmpty = true;
+
+  Object.keys(obj).forEach((key) => {
+    if (
+      obj[key] !== null &&
+      obj[key] !== undefined &&
+      obj[key] !== false &&
+      obj[key].length !== 0
+    ) {
+      isEmpty = false;
+    }
+  })
+
+  return isEmpty;
+};
 
 const BottomSheetComponente = ({ navigation }) => {
   const stateapp = useSelector((state) => state.appControlslice);
@@ -42,6 +60,8 @@ const BottomSheetComponente = ({ navigation }) => {
     getValues,
     resetField,
   } = useFormContext();
+  let type = store.getState().auth.user.type;
+
 
   return (
     <BottomSheet
@@ -65,7 +85,7 @@ const BottomSheetComponente = ({ navigation }) => {
         <FilterStatusTasks />
         <FilterTemplates />
         <FilterTeam />
-        <FilterAgents />
+        {type != "agent" && <FilterAgents />}
         <TouchableOpacity
           activeOpacity={0.9}
           style={styles.modalAcceptButtonStyle}
@@ -76,8 +96,10 @@ const BottomSheetComponente = ({ navigation }) => {
               textAlign: "center",
             }}
             onPress={() => {
-              setValue("active", !getValues("active"));
-              queryClient.resetQueries(["tasks", true]);
+              if (!validateNotEmptyObject(getValues())) {
+                setValue("active", !getValues("active"));
+                queryClient.resetQueries(["tasks", true]);
+              }
               updateStateApp({ key: "filters_on", value: false });
             }}
           >
@@ -87,6 +109,8 @@ const BottomSheetComponente = ({ navigation }) => {
       </View>
     </BottomSheet>
   );
+
+  
 
   function divider() {
     return (
